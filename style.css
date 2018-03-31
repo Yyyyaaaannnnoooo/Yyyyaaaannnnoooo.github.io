@@ -15,9 +15,15 @@
     /* border: 2px solid #555555; */
 }
 
+@import url('https://fonts.googleapis.com/css?family=Source+Code+Pro:400,900');
+
 body {
     padding: 0;
     margin: 0;
+    font-size: 14px;
+    line-height: 14px;
+    font-family: 'Source Code Pro', monospace;
+    font-weight: 900;
 }
 
 #p5 {
@@ -30,10 +36,10 @@ body {
 }
 
 .left, .right {
-    width: 50%;
+    width: 100%;
     height: 100%;
     overflow-y: scroll;
-    font-size: 6vh;
+    /* font-size: 6vh; */
     position: fixed;
 }
 
@@ -41,6 +47,6 @@ body {
     left: 0px;
 }
 .right{
-    background-color: #f00;
+    /* background-color: #f00; */
     right: 0px;
 }
