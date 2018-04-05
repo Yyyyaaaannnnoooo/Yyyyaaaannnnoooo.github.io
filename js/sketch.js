@@ -1,11 +1,13 @@
 let cnv;
 let mono;
-let fontSize = 14;
+let fontSize = 24;
 let letterCount = 0;
 let lineCount = 0;
 let counter = 0;
+let spanCounter = 0;
 let yText = '';
-const letterWidth = fontSize / 1.75;
+// let span = '<span id="span0" class="mySpans" onclick="revealText(0)">y</span>'
+const letterWidth = fontSize / 1.65;
 function preload() {
   mono = loadFont('font/SourceCodePro-Black.otf');
 }
@@ -28,21 +30,32 @@ function draw() {
 }
 
 function windowResized() {
-  resizeCanvas(innerWidth, innerHeight);
+  // resizeCanvas(innerWidth, innerHeight);
   renderDiv();
 }
 
 function makeYText() {
   let bBox;
+  yText = '';
+  counter = 0;
+  lineCount = 0;
+  spanCounter = 0;
   while (counter < 20000) {
     yText += 'y';
-    if (letterCount * letterWidth > width - textWidth('y')) {
-      yText += '\n'
+    if (letterCount * letterWidth > innerWidth - textWidth('y')) {
+      yText += '<br>'
       letterCount = 0;
       lineCount++;
-
     }
-    if (fontSize * lineCount >= height) break;
+    if (Math.random() * 100 < 0.5 && spanCounter < span.length) {
+      // if (counter < span.length) {
+        console.log('add Span')
+        yText += span[spanCounter];
+        letterCount++;
+        spanCounter ++;
+      // }
+    }
+    if (fontSize * lineCount >= innerHeight - fontSize) break;
     letterCount++;
     counter++;
     // if (counter > 50000) break;
@@ -52,11 +65,16 @@ function makeYText() {
 function convertToHTML(txt) {
   let pattern = '<br>';
   re = new RegExp(pattern, "g");
-  txt.replace(re, '\n');
+  return txt.replace(re, '\n');
 }
 
-function renderDiv(){
-  makeYText()
-  convertToHTML(yText);
+function renderDiv() {
+  makeYText();
+  let index = Math.floor(Math.random() * yText.length);
+  // yText.replace('y', span);
   document.getElementById('ytxt').innerHTML = yText;
+}
+
+function revealText(val) {
+  document.getElementById('span' + val).innerHTML = htmlTexts[val];
 }
