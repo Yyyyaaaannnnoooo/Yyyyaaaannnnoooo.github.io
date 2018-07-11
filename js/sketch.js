@@ -8,8 +8,14 @@ let spanCounter = 0;
 let yText = '';
 // let span = '<span id="span0" class="mySpans" onclick="revealText(0)">y</span>'
 const letterWidth = fontSize / 1.65;
+let arrow;
+let flock;
 function preload() {
   mono = loadFont('font/SourceCodePro-Black.otf');
+  arrow = loadImage('./cursor.svg', () => {
+    flock = new Flock(arrow, 10);
+  });
+
 }
 function setup() {
   cnv = createCanvas(innerWidth, innerHeight);
@@ -17,21 +23,28 @@ function setup() {
   textFont(mono);
   textSize(fontSize);
   textLeading(fontSize);
-  renderDiv();
+  imageMode(CENTER);
+  // renderDiv();
   // createDiv(yText);
 }
 
 function draw() {
+  background(0)
   // noStroke();
   // background(0, 255, 0)
   // fill(255);
   // ellipse(mouseX, mouseY, 200);
   // text(yText, 0, fontSize);
+  if (flock != null || undefined) {
+    flock.update();
+    flock.show();
+  }
+  // image(arrow, mouseX - 100, mouseY - 100);
 }
 
 function windowResized() {
-  // resizeCanvas(innerWidth, innerHeight);
-  renderDiv();
+  resizeCanvas(innerWidth, innerHeight);
+  // renderDiv();
 }
 
 function makeYText() {
@@ -49,10 +62,10 @@ function makeYText() {
     }
     if (Math.random() * 100 < 0.5 && spanCounter < span.length) {
       // if (counter < span.length) {
-        console.log('add Span')
-        yText += span[spanCounter];
-        letterCount++;
-        spanCounter ++;
+      console.log('add Span')
+      yText += span[spanCounter];
+      letterCount++;
+      spanCounter++;
       // }
     }
     if (fontSize * lineCount >= innerHeight - fontSize) break;
