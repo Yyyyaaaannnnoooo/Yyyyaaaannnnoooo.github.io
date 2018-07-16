@@ -21,13 +21,14 @@ h1, h2, h3 {
 
 .container {
     /* background-color: #000; */
-    width: 100%;
+    width: 300%;
     height: 100vh;
     position: fixed;
-    left: 50%;
+    left: 0px;
+    /* left: 50%;
     transform: translate(-50%, 0);
     -webkit-transform: translate(-50%, 0);
-    -ms-transform: translate(-50%, 0);
+    -ms-transform: translate(-50%, 0); */
 }
 
 .reveal {
@@ -153,9 +154,10 @@ h1, h2, h3 {
     height: auto;
 }
 
-/* #dither-1{
-    width: 40vw;
-} */
+#teaching{
+    /* display: none; */
+    /* width: 40vw; */
+}
 
 #html-show {
     display: none;
