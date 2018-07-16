@@ -179,6 +179,14 @@ h1, h2, h3 {
     z-index: 999;
 }
 
+#p5Sketch{
+    position: fixed;
+    z-index: 9999;;
+    right: 0px;
+    bottom: 0px;
+    /* width: 200px;
+    height: 200px; */
+}
 /* custom scrollbars */
 
 ::-webkit-scrollbar-track {
