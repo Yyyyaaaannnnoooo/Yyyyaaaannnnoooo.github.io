@@ -155,7 +155,12 @@ h1, h2, h3 {
 }
 
 #teaching{
-    /* display: none; */
+    display: none;
+    /* width: 40vw; */
+}
+
+#games{
+    display: none;
     /* width: 40vw; */
 }
 
