@@ -2,33 +2,389 @@
 <html>
 
 <head>
+  <meta charset="utf-8">
   <meta name="viewport" width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0>
+  <title>TEST</title>
   <script src="js/libraries/jquery-3.3.1.min.js"></script>
-  <script src="js/libraries/p5.min.js"></script>
+  <!-- <script src="js/libraries/p5.min.js"></script>
   <script src="js/libraries/p5.dom.min.js"></script>
-  <script src="js/libraries/p5.sound.min.js"></script>  
-  <script src="js/agent.js"></script>
-  <script src="js/flock.js"></script>
+  <script src="js/libraries/p5.sound.min.js"></script> -->
   <script src="js/sketch.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <div id="p5"></div>
-  <div class="left" id="ytxt">
-    <!-- yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy -->
-    <!-- Hi I'm YANO!
-    <br>I'm an artist and creative coder with background in photography.
-    <br>I'm currently working at the
-    <a href="https://www.ixdm.ch/">Critical Media Lab</a> as a programmer for the research project
-    <a href="https://www.ixdm.ch/portfolio/thinking-toys-for-commoning/">"Thinking Toys (or Games) for Commoning"</a>.
-    <br>As part of the research group I'm mainly involved in the development of
-    <a href="https://github.com/commoningToys">Agent Based Models</a> and our amazing
-    <a href="http://commoning.rocks/">website</a>.
-    <br> -->
+  <div id="html-show"></div>
+  <div class="container">
+    <div class="column" id="about">
+      <h1>HELLO!</h1>
+      <p>
+        My name is YANO, I am a visual coder and artist based in Basel.
+        <br>
+        <u>My work is usually explorative and revelatory.</u>
+      </p>
+      <div class="citation" id="about">
+        I like to understands the mechanics and functions of things.
+      </div>
+      <p>
+        By
+        <u>things</u> I mean any object or concept that catches my interest.
+        <br> I have been working a lot with
+        <a href="http://ernnrng.tumblr.com/" target="_blank">photography</a>, I learned to
+        <u>build cameras, and to destroy images</u>. This was the gateway practice that led me to what I do now:
+        <u>building tools that explore the mechanics of things</u>.
+        <br> I also do a lot of
+        <button class="reveal" id="reveal-games" name="games">stupid (but funny 😂) works</button> that usually make no sense.
+        <br> Currently I work a lot with
+        <button class="reveal" id="reveal-abm" name="abm">Agent Based Models</button>, that led me to growing interest toward
+        <a href="https://en.wikipedia.org/wiki/High-frequency_trading">High Frequency Trading</a> algorithms.
+        <br> I am having a long term relationship ❤️️️️️️❤️❤️ with the
+        <button class="reveal" id="reveal-dither" name="dither-1">dithering</button> algorithm.
+        <br> I also do some
+        <button class="reveal" id="reveal-teaching" name="teaching">teaching</button> in the form of workshops, lectures and talks.
+      </p>
+      <img src="img/1.jpg" alt="">
+      <p>
+        <b>2018</b> New Face Award
+        <a href="http://festival.j-mediaarts.jp/en/works/art/the-dither-is-naked/" target="_blank">@Japan Media Art Festival</a> + Exhibition + talk
+        <br>
+        <b>2017</b> Collective exhibition
+        <a href="http://www.hek.ch/en/program/events-en/event/silicon-is-a-grey-crystal.html" target="_blank">@H3k</a> for the 2017
+        <a href="https://regionale.org/kunstler-innen/" target="_blank">Regionale</a>
+        <br>
+        <b>2017</b> Talk "The Dither is Naked"
+        <a href="http://www.teok.info/" target="_blank">@TEOK</a>
+        <br>
+        <b>2015 – 2017</b> MA in Visual Communication and Iconic Theory @HGK, Basel
+        <br>
+        <b>2014</b> The new portrait Zine by Mathea Millman
+        <br>
+        <b>2014</b> Naturae by Steve Bisson
+        <br>
+        <b>2014</b>
+        <a href="http://dazeddigital.tumblr.com/post/91059790588/state-of-art-tumblr-of-the-day" target="_blank">Dazed Digital</a>
+        <br>
+        <b>2013</b> Der Greif Photomagazine issue #7
+        <br>
+        <b>2013</b> finalist of 17th edition of the "vfg Nachwuchsförderpreis für Fotografie"
+        <br>
+        <b>2012</b> Collective exposition, Piombino Social Photo Fest, Piombino.
+        <br>
+        <b>2012</b> Collective exposition, Diladdarte, Firenze.
+        <br>
+        <b>2011</b> La Luna Di Traverso, online magazine.
+        <br>
+        <b>2007 – 2011</b> BA in Photography at Università degli Studi di Firenze
+        <br>
+      </p>
+    </div>
+    <div class="column" id="abm">
+      <h1>ABM</h1>
+      <p>
+        Since january 2018 I am part of a research group at the
+        <a href="https://www.ixdm.ch/" target="_blank">Critical Media Lab</a>.
+        <br> As creative coder of the team I am developing
+        <a href="https://en.wikipedia.org/wiki/Agent-based_model" target="_blank">agent based models</a> that
+        <br>
+      </p>
+      <div class="citation">
+        "stimulate reflection on the intuitively incomprehensible complexity of commoning"
+      </div>
+      <p>
+        <a href="https://www.ixdm.ch/portfolio/thinking-toys-for-commoning/" target="_blank">"Thinking (Toys or Games) for Commoning"</a>, is a project that looks at the complexity of commoning and makes it
+        understandable through playing and gaming.
+        <br>
+        <br> I am currently programming the games and models with JavaScript and
+        <a href="https://p5js.org/" target="_blank">p5.js</a>.
+        <br> I also curate the design of our
+        <a href="http://commoning.rocks/" target="_blank">website</a>.
+        <br> And
+        <a href="https://github.com/commoningtoys" target="_blank">here</a> link to our project repository with the developed models.
+      </p>
+    </div>
+    <div class="column" id="dither-1">
+      <h1>
+        GENEALOGY OF THE DITHER IS NAKED!
+      </h1>
+      <p style="font-size: 75%">
+        <u>If you don't want to read the whole text just click the following links to see the different stages of the project.</u>
+        <ul>
+          <li>
+            <a href="http://prettydither.tumblr.com/" target="_blank">Tumblr-Bot</a>
+          </li>
+          <li>
+            <a href="https://twitter.com/tobonay" target="_blank">Twitter-Bot</a>
+          </li>
+          <li>
+            <a href="https://github.com/Yyyyaaaannnnoooo/DitherFont_v_01" target="_blank">Dither Font Builder</a>
+          </li>
+          <li>
+            <a href="http://yyyyyyyy.xyz/dither/" target="_blank">Dither WEB APP</a>
+          </li>
+        </ul>
+      </p>
+      <p>
+        My first experience with
+        <u>dither</u> was during my my first year of master.
+        <br> During the first year I needed to print a gradient, but our printer was not good enough. the prints were full of
+        <u>artifacts</u> due to the large amount of colors in a gradient.
+        <br> I decided therefore to use the photoshop built-in tool for color palette reduction. The tool provided various options
+        to choose between different
+        <u>dither</u> algorithms. This was the result I had while playing with the tool.
+      </p>
+      <img src="img/proto_dither.gif" alt="">
+      <div class="citation">
+        WOW!
+        <br> EYE BLEEDING!
+      </div>
+      <p>
+        But it was olnly one year later that I mastered the
+        <a href="https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering" target="_blank">Floyd–Steinberg</a> dithering algorithm. This was possible also thank to
+        <a href="https://github.com/danielepiccone/dithering_algorithms" target="_blank">Daniele Piccone</a>,
+        <a href="http://danieltemkin.com/DitherStudies/About" target="_blank">Daniel Temkin</a> and their amazing work. Last and but not least this text about
+        <a href="http://www.efg2.com/Lab/Library/ImageProcessing/DHALF.TXT" target="_blank">"digital halftoning, or dithering"</a> was quite helpful to understand the mechanics of
+        <u>dithering</u>.
+        <br>
+        <a href="https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering" target="_blank">Floyd–Steinberg</a> dithering works by using an error diffusion algortihm
+      </p>
+      <div class="citation">
+        meaning it pushes (adds) the residual quantization error of a pixel onto its neighboring pixels.
+      </div>
+      <p>
+        It spreads the error accroding to some hard-coded values as follows
+      </p>
+      <table style="width: 100%; font-size: 75%">
+        <tr>
+          <th>[ ]</th>
+          <th>[ ]</th>
+          <th>[ ]</th>
+        </tr>
+        <tr>
+          <th>[ ]</th>
+          <th>[*]</th>
+          <th>[7/16]</th>
+        </tr>
+        <tr>
+          <th>[3/16]</th>
+          <th>[5/16]</th>
+          <th>[1/16]</th>
+        </tr>
+      </table>
+      <p>
+        <u style="font-size: 75%;">The pixel with the * indicates the pixel being currently scanned</u>
+        <br>
+        <br> Those values became my playground for the exploration of the
+        <u>dithering</u> algorithm. My first step was to change the common
+        <u>divisor (16)</u> of the those hard-coded values.
+      </p>
+      <input id="div" style="width: 100%" type="range" value="1" min="1" max="30" step="1" onchange="updateValues()">
+      <table style="width: 100%; font-size: 75%">
+        <tr>
+          <th>[ ]</th>
+          <th>[ ]</th>
+          <th>[ ]</th>
+        </tr>
+        <tr>
+          <th>[ ]</th>
+          <th>[*]</th>
+          <th>[7/
+            <span class="dividend">16</span>]</th>
+        </tr>
+        <tr>
+          <th>[3/
+            <span class="dividend">16</span>]</th>
+          <th>[5/
+            <span class="dividend">16</span>]</th>
+          <th>[1/
+            <span class="dividend">16</span>]</th>
+        </tr>
+      </table>
+      <br>
+      <p>
+        This lead to the creation of a
+        <a href="http://prettydither.tumblr.com/" target="_blank">Tumblr-Bot</a>, posting dithered gradients with random values as dividend in the error quantization algorithm.
+      </p>
+      <img src="img/DitherWEB.png " alt=" ">
+      <p>
+        The next step was to create a
+        <a href="https://twitter.com/tobonay" target="_blank">Twitter-Bot</a>, reacting to the
+        <u>#prettyDither</u> hashtag, followed by two colors, i.e. #prettyDither
+        <span style="background: #fff; color: #f00">red</span>
+        <span style="background: #fff; color: #0f0">green</span>
+      </p>
+      <iframe src="https://player.vimeo.com/video/219866411" frameborder="0"></iframe>
+      <p>
+        In order to gain a better control over the algorithm I decided to control also the the
+        <u>divisor</u> of the error quantization algortihm
+      </p>
+      <table style="width: 100%; font-size: 75%">
+        <tr>
+          <th>divisor
+            <br>–––––––
+            <br>dividend</th>
+          <th>divisor
+            <br>–––––––
+            <br>dividend</th>
+          <th>divisor
+            <br>–––––––
+            <br>dividend</th>
+        </tr>
+        <tr>
+          <th>divisor
+            <br>–––––––
+            <br>dividend</th>
+          <th>divisor
+            <br>–––––––
+            <br>dividend</th>
+          <th>divisor
+            <br>–––––––
+            <br>dividend</th>
+        </tr>
+        <tr>
+          <th>divisor
+            <br>–––––––
+            <br>dividend</th>
+          <th>divisor
+            <br>–––––––
+            <br>dividend</th>
+          <th>divisor
+            <br>–––––––
+            <br>dividend</th>
+        </tr>
+      </table>
+      <p>
+        I implemented this to control the the calculation of the quantization error among all the neighboring pixels, not only the
+        4 in use in the Floyd–Steinberg algorithm. this lead to the development of this
+        <a href="http://yyyyyyyy.xyz/dither/" target="_blank">website</a>, that allows user to control each part of the algorithm.
+      </p>
+      <div class="citation">
+        here some results
+      </div>
+      <br>
+      <br>
+      <img src="img/dither_08.jpg" alt="">
+      <br>
+      <br>
+      <img src="img/dither_11.jpg" alt="">
+      <br>
+      <br>
+      <p>
+        The interesting thing about the
+        <u>dithering</u> algorithm, is its
+        <u>camouflaging</u> attitude. What do I mean? Good
+        <u>dithering</u> algorithms, when properly developed, should remain unnoticed by the viewers eyes. Curiously enough
+        when the same algorithm is applied to gradients its
+        <u>camouflaging</u> qualities get weaker revealing the algorithm structure in the form of colorful patterns. Thee additional
+        control on the quantization error algortihm allows for more in depth analysis of the
+        <u>dithering</u> process.
+      </p>
+      <div class="citation">Despite the visual result of the exploitation of the latter algorithm, my interests lies also in the revelatory quality
+        of the project exposing the algorithm as himself.</div>
+    </div>
+    <div class="column" id="horoscope">
+      <h1>FISIOGNOMIC HOROSCOPE</h1>
+      <iframe src="https://player.vimeo.com/video/217637162 " frameborder="0 "></iframe>
+      <p>
+        The Fisiognomic Horoscope was created for the
+        <a href="http://yami-ichi.biz/ ">Yami-Ichi</a> Flea Market
+        <a href="http://www.hek.ch/ ">@H3K</a>. Thanks to
+        <a href="http://www.wekinator.org/ ">Wekinator</a>, a machine learning software, it was possible to train a model with celebrities faces, and their astrological
+        sign. People can sit in front of the camera and let their face be scanned. The trained model matches their face traits
+        with the ones in the datatbase. At the end the matching horoscope is printed. The project was done to bring awareness
+        about the use of machine learning in the facial recognition field.
+        <a href="https://arxiv.org/abs/1611.04135 " target="_blank">Some Ph.D students</a> already applied machine lerning to determine if someone could be a criminal or not. This was
+        possible by training a model with the portrait of already convicted criminal.</p>
+      <div class="citation ">This research leads back to the time were Physiognomy and Phrenology were considered real sciences, despite dicovering
+        later on that they were not.</div>
 
+      <br>
+      <br>
+      <p>I am currently trying to port this project to JavaScript with
+        <a href="https://js.tensorflow.org/ " target="_blank">tensorFlow.js</a>.
+      </p>
+    </div>
+    <div class="column" id="games">
+      <h1>FUNNY GAMES!</h1>
+      <div class="video-container">
+        <video src="img/ScreenRecording_07-16-2018 18-13-33.MP4" controls></video>
+        <video src="img/ScreenRecording_07-16-2018 18-14-48.MP4" controls></video>
+        <video src="img/ScreenRecording_07-16-2018 18-15-37.MP4" controls></video>
+      </div>
+    </div>
+    <div class="column" id="selberschuld">
+      <h1>SELBERSCHULD!</h1>
+      <img src="img/selberschuld_01.jpg " alt=" ">
+      <p>
+        In the German language there is an expression selberschuld, that translated in English means: you have to blame yourself.
+      </p>
+      <div class="citation">
+        Selberschuld is the non-solidarity practice, we use it primarily to distance ourselves from problems someone else has.
+      </div>
+      <p>
+        In this series of posters I use this expression to describe the disgrace of the young unemployed, the migrants that die traveling
+        to Europe and the heroin addiction related deaths in Switzerland.
+        <br>
+        <img src="img/selberschuld_02.jpg" alt=" ">
+        <br> The expression is repeatedly used to design a line diagram, in which the darker letter draw the statistics. Those
+        three examples extremely represent how far we can go with our non-solidarity practice. Incapable to help, we rather
+        decide that the guilt of their disgrace is only upon them, relieving us from being empathic. (that in my understanding
+        means: I really don’t care about your problems let me live my life without being involved in yours)
+        <br>
+        <img src="img/selberschuld_03.jpg" alt=" ">
+      </p>
+    </div>
+    <div class="column" id="teaching">
+      <h1>TEACHING!</h1>
+    </div>
   </div>
-  <!-- <div class="right"></div> -->
+  <script>
+    fetch('index.html')
+      .then(response => {
+        // console.log(response.text())
+        return response.text();
+      })
+      .then(txt => {
+        // console.log(txt);
+        let htmlText = txt.split('\n');
+        // console.log(htmlText);
+        let myText = '';
+        for (const line of htmlText) {
+          // console.log(line);
+          let newT = line.replace('<', '&lt;').replace('>', '&gt;').replace('/', '&#47;');
+          // console.log(newT);
+          myText += newT;
+          myText += '<br>';
+        }
+
+        // console.log(myText);
+        document.getElementById('html-show').innerHTML = myText;
+      })
+    // .catch(err => console.error(err));
+    // $('.column p').hover(el => console.log(el));
+
+
+
+    function updateValues() {
+      let val = document.getElementById('div').value;
+      console.log(val);
+      let divClass = document.getElementsByClassName('dividend');
+      for (const el of divClass) {
+        el.innerHTML = val;
+      }
+    }
+    // let idSelector = ''
+    $('.reveal').hover(elem => {
+      let idSelector = elem.target.name
+      let el = document.getElementById(idSelector);
+      // $(el).addClass('column:hover')
+      el.style.width = '40vw';
+    }, elem => {
+      let idSelector = elem.target.name
+      let el = document.getElementById(idSelector);
+      // $(el).addClass('column')
+      el.style.width = null;
+    });
+  </script>
 </body>
 
 </html>
