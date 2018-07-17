@@ -12,43 +12,37 @@ document.onmousemove = function mouseCoord(event) {
   console.log(mousex, mousey);
 }
 let cnv;
-let pos;
+// let pos;
 
 function setup() {
-  cnv = createCanvas(100, 75);
+  cnv = createCanvas(innerWidth, innerHeight);
   cnv.parent('p5Sketch');
-  pos = createVector(width / 2, height / 2);
+  // pos = createVector(width * 0.85, height * 0.85);
 }
 
 function draw() {
 
   background(255);
-  strokeWeight(3)
-  let r = height - 5;
-  if (mousex < w() - width) {
-    targetx = map(mousex, 0, w() * 2, 0, width);
-    // targety = map(mousey, 0, h * 2, 0, height);
-  } else {
-    targetx = map(mousex, w() - width, w(), 0, width);
-    // targety = map(mousey, 0, h * 2, 0, height);
-  }
-
-  if (mousey < h() - height) {
-    // targetx = map(mousex, 0, w * 2, 0, width);
-    targety = map(mousey, 0, h() * 2, 0, height);
-  } else {
-
-    // targetx = map(mousex, 0, w * 2, 0, width);
-    targety = map(mousey, h() - height, h(), 0, height);
-  }
-  let angle = atan2(targety - pos.y, targetx - pos.x);
+  strokeWeight(3);
+  let angle = atan2(mouseY - pos().y, mouseX - pos().x);
   push()
-  translate(pos.x, pos.y);
+  translate(pos().x, pos().y);
   noFill();
-  ellipse(0, 0, r);
+  ellipse(0, 0, r());
   rotate(angle);
   noStroke();
   fill(0, 150, 200);
-  ellipse(r / 3.5, 0, r * 0.35);
+  ellipse(r() / 3.5, 0, r() * 0.35);
+  fill(0);
+  ellipse(r() / 3, 0, r() * 0.15);
   pop();
+}
+function r(){
+  return height / 10;
+}
+function pos(){
+  return createVector (width - (r() / 1.5), height - (r() / 1.5));
+}
+function windowResized(){
+  resizeCanvas(innerWidth, innerHeight);
 }
