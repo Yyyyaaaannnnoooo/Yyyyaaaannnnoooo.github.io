@@ -1,16 +1,43 @@
-let mousex = 0;
-let mousey = 0;
 function w() {
   return innerWidth
 }
 function h() {
   return innerHeight
 }
-document.onmousemove = function mouseCoord(event) {
-  mousex = event.clientX;
-  mousey = event.clientY;
-  console.log(mousex, mousey);
+let selectedText = '';
+$(window).mouseup(() => {
+  clearInterval();
+  let index = 0;
+  selectedText = ''
+  selectedText = getSelectedText().split('');
+  if (selectedText != '') {
+    console.log(selectedText);
+    let SI = setInterval(() => {
+      let myDiv = document.getElementById('selected-text');
+      console.log(selectedText[index])
+      let letter = selectedText[index];
+      myDiv.innerHTML += letter;
+      myDiv.scrollTop = myDiv.scrollHeight;
+      index++;
+      if (index >= selectedText.length) {
+        myDiv.innerHTML = '';
+        clearInterval(SI);
+      }
+    }, 100);
+
+  }
+});
+
+function getSelectedText() {
+  if (window.getSelection) {
+    return window.getSelection().toString();
+  } else if (document.selection) {
+    return document.selection.createRange().text;
+  }
+  return '';
 }
+
+
 let cnv;
 // let pos;
 
@@ -37,12 +64,12 @@ function draw() {
   ellipse(r() / 3, 0, r() * 0.15);
   pop();
 }
-function r(){
+function r() {
   return height / 10;
 }
-function pos(){
-  return createVector (width - (r() / 1.5), height - (r() / 1.5));
+function pos() {
+  return createVector(width - (r() / 1.5), height - (r() / 1.5));
 }
-function windowResized(){
+function windowResized() {
   resizeCanvas(innerWidth, innerHeight);
 }

@@ -153,7 +153,27 @@ h1, h2, h3 {
     width: 100%;
     height: auto;
 }
-
+#selected-text{
+    /* z-index: 9999999; */
+    color: #00f;
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100vw;
+    height: 100vh;
+    font-size: 900%;
+    line-height: 0.7em;
+    font-weight: bolder;
+    word-wrap: break-word;
+    hyphens: auto;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: center;
+    /* align horizontal */
+    align-items: center;
+    /* align vertical */
+    overflow-y: scroll;
+}
 #teaching{
     display: none;
     /* width: 40vw; */
@@ -181,7 +201,7 @@ h1, h2, h3 {
 
 #p5Sketch{
     position: fixed;
-    z-index: -1;;
+    z-index: -1;
     right: 0px;
     bottom: 0px;
     /* width: 200px;
