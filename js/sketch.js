@@ -5,23 +5,29 @@ function h() {
   return innerHeight
 }
 let selectedText = '';
+let SI = undefined;
+let write = true;
 $(window).mouseup(() => {
-  clearInterval();
+  if (SI != undefined) clearInterval(SI);
   let index = 0;
-  selectedText = ''
+  selectedText = '';
+  write = true;
   selectedText = getSelectedText().split('');
   if (selectedText != '') {
-    console.log(selectedText);
-    let SI = setInterval(() => {
+    SI = setInterval(() => {
       let myDiv = document.getElementById('selected-text');
-      console.log(selectedText[index])
-      let letter = selectedText[index];
-      myDiv.innerHTML += letter;
-      myDiv.scrollTop = myDiv.scrollHeight;
-      index++;
+      if (write) {
+        let letter = selectedText[index];
+        myDiv.innerHTML += letter;
+        myDiv.scrollTop = myDiv.scrollHeight;
+        index++;
+      }
       if (index >= selectedText.length) {
-        myDiv.innerHTML = '';
-        clearInterval(SI);
+        write = false;
+        setTimeout(() => {
+          myDiv.innerHTML = '';
+          clearInterval(SI);
+        }, 2000);
       }
     }, 100);
 
