@@ -7,7 +7,7 @@ body {
     width: 300%;
 }
 
-p, tr, li {
+.column p, .column tr, .column li {
     /* font-family: 'Times New Roman', Times, serif; */
     font-family: 'EB Garamond', serif;
     /* font-family: 'Cormorant', serif; */
@@ -61,7 +61,12 @@ h1, h2, h3 {
     text-shadow: 2px 2px #f00;
     text-transform: uppercase;
 }
+div.citation a{
+    color: #00f;
+    text-shadow: 2px 2px #0f0;
+    /* text-decoration: underline #f00; */
 
+}
 .column {
     font-size: 150%;
     padding: 5px;
@@ -117,7 +122,9 @@ h1, h2, h3 {
     text-shadow: 1px 1px #fff;
     /* letter-spacing: 2px; */
 }
-
+.column u:hover{
+    color: #000;
+}
 .column q {
     font-size: 200%;
     line-height: 1.3em;
@@ -180,7 +187,7 @@ h1, h2, h3 {
 }
 
 #games{
-    display: none;
+    /* display: none; */
     /* width: 40vw; */
 }
 

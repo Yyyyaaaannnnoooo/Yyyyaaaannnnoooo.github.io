@@ -45,18 +45,15 @@ function getSelectedText() {
 
 
 let cnv;
-// let pos;
 
 function setup() {
   cnv = createCanvas(innerWidth, innerHeight);
   cnv.parent('p5Sketch');
-  // pos = createVector(width * 0.85, height * 0.85);
 }
 
 function draw() {
-
   background(255);
-  strokeWeight(3);
+  strokeWeight(2.5);
   let angle = atan2(mouseY - pos().y, mouseX - pos().x);
   push()
   translate(pos().x, pos().y);
@@ -71,10 +68,10 @@ function draw() {
   pop();
 }
 function r() {
-  return height / 10;
+  return height / 15;
 }
 function pos() {
-  return createVector(width - (r() / 1.5), height - (r() / 1.5));
+  return createVector(width - (r() / 1.8), height - (r() / 1.8));
 }
 function windowResized() {
   resizeCanvas(innerWidth, innerHeight);
