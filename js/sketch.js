@@ -1,9 +1,6 @@
-function w() {
-  return innerWidth
-}
-function h() {
-  return innerHeight
-}
+/**
+ * BACKGROUND TEXT
+ */
 let selectedText = '';
 let SI = undefined;
 let write = true;
@@ -33,7 +30,6 @@ $(window).mouseup(() => {
 
   }
 });
-
 function getSelectedText() {
   if (window.getSelection) {
     return window.getSelection().toString();
@@ -43,6 +39,38 @@ function getSelectedText() {
   return '';
 }
 
+/**
+ * CHANGE WEBSITE TITLE DYNAMICALLY WITH EMOJI
+ */
+const EMOJIS = [
+  '🦑',
+  '🍑',
+  '🐋',
+  '🌏',
+  '🌍',
+  '🌎',
+  '🌈',
+  '🌞',
+  '🏩',
+  '🕳',
+]
+setInterval(() => {
+  document.title = randomEmoji() + randomEmoji() + randomEmoji();
+}, 2000);
+
+function randomEmoji(){
+  let randIndex = Math.floor(Math.random() * EMOJIS.length);
+  return EMOJIS[randIndex];
+}
+/**
+ * EYE ANIMATION
+ */
+function w() {
+  return innerWidth
+}
+function h() {
+  return innerHeight
+}
 
 let cnv;
 
