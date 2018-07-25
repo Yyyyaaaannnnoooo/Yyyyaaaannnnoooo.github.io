@@ -42,7 +42,7 @@
         <br> I also do a lot of
         <button class="reveal" id="reveal-games" name="games">stupid (but funny 😂) works</button> that usually make no sense.
         <br> Currently I work a lot with
-        <button class="reveal" id="reveal-abm" name="abm">Agent Based Models</button>, that led me to growing interest toward
+        <button class="reveal" id="reveal-abm" name="abm">Agent Based Models</button>, that led me to a growing interest in
         <a href="https://en.wikipedia.org/wiki/High-frequency_trading">High Frequency Trading</a> algorithms.
         <br> I am having a long term relationship ❤️️️️️️❤️❤️ with the
         <button class="reveal" id="reveal-dither" name="dither-1">dithering</button> algorithm, and I also do some
@@ -53,6 +53,8 @@
         <b>2018</b> New Face Award
         <a href="http://festival.j-mediaarts.jp/en/works/art/the-dither-is-naked/" target="_blank">@Japan Media Art Festival</a> + Exhibition + talk
         <br>
+        <b>2017</b> Collective exhibition
+        <a href="http://thewrong.org/credits" target="_blank">@The Wrong Digital Art Biennale</a>
         <b>2017</b> Collective exhibition
         <a href="http://www.hek.ch/en/program/events-en/event/silicon-is-a-grey-crystal.html" target="_blank">@H3k</a> for the 2017
         <a href="https://regionale.org/kunstler-innen/" target="_blank">Regionale</a>
@@ -95,7 +97,9 @@
       <h1>ABM</h1>
       <p>
         Since january 2018 I am part of a research group at the
-        <a href="https://www.ixdm.ch/" target="_blank">Critical Media Lab</a>.
+        <a href="https://www.ixdm.ch/" target="_blank">Critical Media Lab</a>,focusing on
+        <a href="https://www.ixdm.ch/portfolio/thinking-toys-for-commoning/" target="_blank">"Thinking (Toys or Games) for Commoning"</a>: a project looking at the complexity of commoning as a subject and making
+        it understandable through playing and gaming.
         <br> As creative coder of the team I am developing
         <a href="https://en.wikipedia.org/wiki/Agent-based_model" target="_blank">agent based models</a> that
         <br>
@@ -104,15 +108,13 @@
         "stimulate reflection on the intuitively incomprehensible complexity of commoning"
       </div>
       <p>
-        <a href="https://www.ixdm.ch/portfolio/thinking-toys-for-commoning/" target="_blank">"Thinking (Toys or Games) for Commoning"</a>, is a project that looks at the complexity of commoning and makes it
-        understandable through playing and gaming.
         <br>
         <br> I am currently programming the games and models with JavaScript and
         <a href="https://p5js.org/" target="_blank">p5.js</a>.
         <br> I also curate the design of our
         <a href="http://commoning.rocks/" target="_blank">website</a>.
         <br> And
-        <a href="https://github.com/commoningtoys" target="_blank">here</a> link to our project repository with the developed models.
+        <a href="https://github.com/commoningtoys" target="_blank">here</a> a link to our project repository with the developed models.
       </p>
     </div>
     <div class="column" id="dither-1">
@@ -138,11 +140,10 @@
       </p>
       <p>
         My first experience with
-        <u>dither</u> was during my my first year of master.
-        <br> During the first year I needed to print a gradient, but our printer was not good enough. the prints were full of
-        <u>artifacts</u> due to the large amount of colors in a gradient.
-        <br> I decided therefore to use the photoshop built-in tool for color palette reduction. The tool provided various options
-        to choose between different
+        <u>dither</u> was during my my first year of my Masters. During the first year I needed to print a gradient, but our
+        printer was not good enough. The prints were full of
+        <u>artifacts</u> due to the large amount of colors in a gradient. I decided therefore to use the Photoshop built-in
+        tool for colour palette reduction. The tool provided various options to choose between different
         <u>dither</u> algorithms. This was the result I had while playing with the tool.
       </p>
       <img src="img/proto_dither.gif" alt="">
@@ -152,7 +153,7 @@
       </div>
       <p>
         But it was olnly one year later that I mastered the
-        <a href="https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering" target="_blank">Floyd–Steinberg</a> dithering algorithm. This was possible also thank to
+        <a href="https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering" target="_blank">Floyd–Steinberg</a> dithering algorithm. This was possible also thanks to
         <a href="https://github.com/danielepiccone/dithering_algorithms" target="_blank">Daniele Piccone</a>,
         <a href="http://danieltemkin.com/DitherStudies/About" target="_blank">Daniel Temkin</a> and their amazing work. Last and but not least this text about
         <a href="http://www.efg2.com/Lab/Library/ImageProcessing/DHALF.TXT" target="_blank">"digital halftoning, or dithering"</a> was quite helpful to understand the mechanics of
@@ -164,7 +165,7 @@
         meaning it pushes (adds) the residual quantization error of a pixel onto its neighboring pixels.
       </div>
       <p>
-        It spreads the error accroding to some hard-coded values as follows
+        It spreads the error according to some hard-coded values as follows:
       </p>
       <table style="width: 100%; font-size: 75%">
         <tr>
@@ -184,7 +185,7 @@
         </tr>
       </table>
       <p>
-        <u style="font-size: 75%;">The pixel with the * indicates the pixel being currently scanned</u>
+        <u style="font-size: 75%;">The pixel with the * indicates the pixel being currently scanned by the algorithm.</u>
         <br>
         <br> Those values became my playground for the exploration of the
         <u>dithering</u> algorithm. My first step was to change the common
@@ -287,12 +288,12 @@
         <u>camouflaging</u> attitude. What do I mean? Good
         <u>dithering</u> algorithms, when properly developed, should remain unnoticed by the viewers eyes. Curiously enough
         when the same algorithm is applied to gradients its
-        <u>camouflaging</u> qualities get weaker revealing the algorithm structure in the form of colorful patterns. Thee additional
+        <u>camouflaging</u> qualities get weaker revealing the algorithm structure in the form of colorful patterns. The additional
         control on the quantization error algortihm allows for more in depth analysis of the
         <u>dithering</u> process.
       </p>
-      <div class="citation">Despite the visual result of the exploitation of the latter algorithm, my interests lies also in the revelatory quality
-        of the project exposing the algorithm as himself.</div>
+      <div class="citation">DESPITE THE VISUAL RESULTS OF THE EXPLOITATION OF THE LATTER ALGORITHM, MY INTERESTS LIE ALSO IN THE REVELATORY QUALITY
+        OF THE PROJECT EXPOSING THE ALGORITHM AS ITSELF.</div>
     </div>
     <div class="column" id="horoscope">
       <h1>FISIOGNOMIC HOROSCOPE</h1>
@@ -303,12 +304,12 @@
         <a href="http://www.hek.ch/" target="_blank">@H3K</a>. Thanks to
         <a href="http://www.wekinator.org/" target="_blank">Wekinator</a>, a machine learning software, it was possible to train a model with celebrities faces, and their astrological
         sign. People can sit in front of the camera and let their face be scanned. The trained model matches their face traits
-        with the ones in the datatbase. At the end the matching horoscope is printed. The project was done to bring awareness
+        with the ones in the database. At the end the matching horoscope is printed. The project was done to bring awareness
         about the use of machine learning in the facial recognition field.
-        <a href="https://arxiv.org/abs/1611.04135" target="_blank">Some Ph.D students</a> already applied machine lerning to determine if someone could be a criminal or not. This was
-        possible by training a model with the portrait of already convicted criminal.</p>
-      <div class="citation ">This research leads back to the time were Physiognomy and Phrenology were considered real sciences, despite dicovering
-        later on that they were not.</div>
+        <a href="https://arxiv.org/abs/1611.04135" target="_blank">Some Ph.D students</a> already applied machine learning to determine if someone could be a criminal or not. This
+        was possible by training a model with the portraits of already convicted criminals.</p>
+      <div class="citation ">THIS RESEARCH LEADS BACK TO THE TIME WHERE PHYSIOGNOMY AND PHRENOLOGY WERE CONSIDERED REAL SCIENCES, DESPITE DISCOVERING
+        LATER ON THAT THEY WERE NOT.</div>
 
       <br>
       <br>
@@ -322,10 +323,10 @@
         Despite the encouraging title, maybe those games are not funny at all.
       </p>
       <div class="citation">
-        but I like them anyway they still make me laugh!
+        BUT I LIKE THEM ANYWAY, THEY STILL MAKE ME LAUGH!
       </div>
       <p>
-        Those games are developed to be played on hand held devices – yes your phone –, they use the
+        Those games are developed to be played on handheld devices – yes, like your phone – they use the
         <u>gyroscope</u> of your device to steer and control the elements in it.
         <br>There is no score or goal in the games.
         <br>
@@ -376,17 +377,16 @@
         In the German language there is an expression selberschuld, that translated in English means: you have to blame yourself.
       </p>
       <div class="citation">
-        Selberschuld is the non-solidarity practice, we use it primarily to distance ourselves from problems someone else has.
-      </div>
+        SELBERSCHULD IS THE NON-SOLIDARITY PRACTICE, WE USE IT PRIMARILY TO DISTANCE OURSELVES FROM PROBLEMS SOMEONE ELSE HAS. </div>
       <p>
         In this series of posters I use this expression to describe the disgrace of the young unemployed, the migrants that die traveling
         to Europe and the heroin addiction related deaths in Switzerland.
         <br>
         <img src="img/selberschuld_02.jpg" alt=" ">
-        <br> The expression is repeatedly used to design a line diagram, in which the darker letter draw the statistics. Those
+        <br> The expression is repeatedly used to design a line diagram, in which the darker letters draw the statistics. Those
         three examples extremely represent how far we can go with our non-solidarity practice. Incapable to help, we rather
-        decide that the guilt of their disgrace is only upon them, relieving us from being empathic. (that in my understanding
-        means: I really don’t care about your problems let me live my life without being involved in yours)
+        decide that the guilt of their disgrace is only upon them, relieving us from being empathic. (This in my understanding
+        means: “I really don’t care about your problems let me live my life without being involved in yours.”)
         <br>
         <img src="img/selberschuld_03.jpg" alt=" ">
       </p>
