@@ -1,5 +1,8 @@
 @import url('https://fonts.googleapis.com/css?family=Source+Code+Pro:500,900&subset=latin-ext');
 @import url('https://fonts.googleapis.com/css?family=Cormorant:700|EB+Garamond:500');
+html{
+    scrollbar-color: #00f #fff;
+}
 body {
     padding: 0;
     margin: 0;
@@ -226,7 +229,22 @@ div.citation a{
     /* background-color: #fff; */
 }
 
-::-webkit-scrollbar-thumb {
+::-moz-scrollbar-thumb {
+    background-color: #00f;
+    /* border: 2px solid #555555; */
+}
+
+::-moz-scrollbar-track {
+    /* -moz-box-shadow: inset 0 0 6px rgba(0,0,0,1); */
+    /* background-color: #fff; */
+}
+
+::-moz-scrollbar {
+    width: 5px;
+    /* background-color: #fff; */
+}
+
+::-moz-scrollbar-thumb {
     background-color: #00f;
     /* border: 2px solid #555555; */
 }
