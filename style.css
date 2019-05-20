@@ -1,13 +1,23 @@
 @import url('https://fonts.googleapis.com/css?family=Source+Code+Pro:500,900&subset=latin-ext');
 @import url('https://fonts.googleapis.com/css?family=Cormorant:700|EB+Garamond:500');
+
+@font-face {
+    font-family: 'pixel';
+    src: url('fonts/PxPlus_VGA_SquarePx.ttf'), url('fonts/PxPlus_VGA_SquarePx.woff');
+}
+*{
+    box-sizing: border-box;
+}
 html{
-    scrollbar-color: #00f #fff;
+    font-size: 100%;
+    scrollbar-color: #0f0 #000;
 }
 body {
     padding: 0;
     margin: 0;
-    font-family: 'Source Code Pro', monospace;
+    font-family: 'pixel', monospace;
     width: 300%;
+    /* background-color: #000; */
 }
 
 .column p, .column tr, .column li {
@@ -17,13 +27,14 @@ body {
 }
 
 h1, h2, h3 {
+    letter-spacing: 2px;
     line-height: 1em;
     color: #fff;
     text-shadow: 4px 4px 3px #0f0;
 }
 
 .container {
-    /* background-color: #000; */
+    background-color: #000;
     width: 300%;
     height: 100vh;
     position: fixed;
@@ -54,11 +65,11 @@ h1, h2, h3 {
 }
 
 .citation {
-    font-size: 200%;
+    font-size: 2rem;
     line-height: 1.2em;
     text-align: center;
     /* background-color: #f00; */
-    font-weight: bolder;
+    /* font-weight: bolder; */
     color: #fff;
     text-decoration: underline #0f0;
     text-shadow: 2px 2px #f00;
@@ -71,7 +82,7 @@ div.citation a{
 
 }
 .column {
-    font-size: 150%;
+    font-size: 1.5rem;
     padding: 5px;
     word-wrap: break-word;
     position: relative;
@@ -90,7 +101,7 @@ div.citation a{
 }
 
 .column:hover {
-    background-color: #000;
+    background-color: #00f;
     color: #fff;
     width: 40vw;
     line-height: 1.5em;
@@ -99,12 +110,13 @@ div.citation a{
 
 .column a {
     /* background: #fff; */
-    color: #000;
+    font-size: 2rem;
+    color: #0f0;
     text-decoration: none;
-    font-weight: bolder;
-    text-shadow: -1px -1px #0f0;
+    /* font-weight: bolder; */
+    /* text-shadow: -1px -1px #0f0; */
     /* font-family: 'Cormorant', serif;  */
-    /* font-family: 'Source Code Pro', monospace; */
+    font-family: 'pixel', monospace;
 }
 
 .column a:hover {
@@ -112,7 +124,7 @@ div.citation a{
     /* background: #fff; */
     font-style: italic;
     /* text-transform: uppercase; */
-    /* text-decoration: overline #f00; */
+    text-decoration: underline #f00;
 }
 
 .column b {
@@ -120,7 +132,9 @@ div.citation a{
 }
 
 .column u {
-    font-style: italic;
+    /* font-style: italic; */
+    font-family: 'pixel', monospace;
+    font-size: 2rem;
     color: #f00;
     text-shadow: 1px 1px #fff;
     /* letter-spacing: 2px; */
@@ -129,7 +143,7 @@ div.citation a{
     color: #000;
 }
 .column q {
-    font-size: 200%;
+    font-size: 2rem;
     line-height: 1.3em;
 }
 
@@ -138,14 +152,14 @@ div.citation a{
 }
 
 .column:hover h1 {
-    color: #000;
-    text-shadow: 4px 4px #fff;
+    color: #0f0;
+    text-shadow: none;
 }
 
 .column button {
     /* background: none; */
     font-family: 'EB Garamond', serif;
-    font-size: 100%;
+    font-size: 1rem;
     border-radius: 25px;
     /* text-decoration: none; */
     /* border: none; */
@@ -171,7 +185,7 @@ div.citation a{
     top: 0px;
     width: 100vw;
     height: 100vh;
-    font-size: 900%;
+    font-size: 9rem;
     line-height: 0.7em;
     font-weight: bolder;
     word-wrap: break-word;
@@ -185,7 +199,7 @@ div.citation a{
     overflow-y: scroll;
 }
 #teaching{
-    display: none;
+    /* display: none; */
     /* width: 40vw; */
 }
 
@@ -196,7 +210,7 @@ div.citation a{
 
 #html-show {
     display: none;
-    font-size: 75%;
+    font-size: 0.75rem;
     position: fixed;
     right: 0px;
     top: 0px;
