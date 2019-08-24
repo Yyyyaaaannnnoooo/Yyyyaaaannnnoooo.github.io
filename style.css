@@ -1,17 +1,19 @@
 @import url('https://fonts.googleapis.com/css?family=Source+Code+Pro:500,900&subset=latin-ext');
 @import url('https://fonts.googleapis.com/css?family=Cormorant:700|EB+Garamond:500');
-
 @font-face {
     font-family: 'pixel';
     src: url('fonts/PxPlus_VGA_SquarePx.ttf'), url('fonts/PxPlus_VGA_SquarePx.woff');
 }
-*{
+
+* {
     box-sizing: border-box;
 }
-html{
+
+html {
     font-size: 100%;
     scrollbar-color: #0f0 #000;
 }
+
 body {
     padding: 0;
     margin: 0;
@@ -75,19 +77,20 @@ h1, h2, h3 {
     text-shadow: 2px 2px #f00;
     text-transform: uppercase;
 }
-div.citation a{
+
+div.citation a {
     color: #00f;
     text-shadow: 2px 2px #0f0;
     /* text-decoration: underline #f00; */
-
 }
+
 .column {
     font-size: 1.5rem;
     padding: 5px;
     word-wrap: break-word;
     position: relative;
     /* border: 2px solid #00f; */
-    width: 5vw;
+    width: 10vw;
     height: 100vh;
     /* line-height: 0.8em; */
     float: left;
@@ -139,9 +142,11 @@ div.citation a{
     text-shadow: 1px 1px #fff;
     /* letter-spacing: 2px; */
 }
-.column u:hover{
+
+.column u:hover {
     color: #000;
 }
+
 .column q {
     font-size: 2rem;
     line-height: 1.3em;
@@ -177,7 +182,8 @@ div.citation a{
     width: 100%;
     height: auto;
 }
-#selected-text{
+
+#selected-text {
     /* z-index: 9999999; */
     color: #00f;
     position: fixed;
@@ -198,12 +204,13 @@ div.citation a{
     /* align vertical */
     overflow-y: scroll;
 }
-#teaching{
+
+#teaching {
     /* display: none; */
     /* width: 40vw; */
 }
 
-#games{
+#games {
     /* display: none; */
     /* width: 40vw; */
 }
@@ -223,7 +230,7 @@ div.citation a{
     z-index: 999;
 }
 
-#p5Sketch{
+#p5Sketch {
     position: fixed;
     z-index: -1;
     right: 0px;
@@ -231,6 +238,7 @@ div.citation a{
     /* width: 200px;
     height: 200px; */
 }
+
 /* custom scrollbars */
 
 ::-webkit-scrollbar-track {
@@ -261,4 +269,34 @@ div.citation a{
 ::-moz-scrollbar-thumb {
     background-color: #00f;
     /* border: 2px solid #555555; */
+}
+
+@media only screen and (max-width: 999px) {
+    html {
+        font-size: 75%;
+    }
+    body {
+        width: 100%;
+    }
+    .container {
+        display: inline;
+        position: relative;
+        width: 100%;
+        height: auto;
+    }
+    .column {
+        width: 100%;
+        height: auto;
+        /* line-height: 0.8em; */
+        float: none;
+        /* background-color: #fff; */
+        /* overflow-y: scroll; */
+        -webkit-transition: none;
+        /* Safari */
+        -ms-transition: none;
+        /* mozilla */
+        transition: none;
+        background-color: #00f;
+        color: #fff;
+    }
 }
