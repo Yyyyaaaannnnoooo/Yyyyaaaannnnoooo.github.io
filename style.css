@@ -298,5 +298,10 @@ div.citation a {
         transition: none;
         background-color: #00f;
         color: #fff;
+        border-bottom: solid 3px red;
+    }
+
+    .column:hover {
+        width: 100%;
     }
 }
