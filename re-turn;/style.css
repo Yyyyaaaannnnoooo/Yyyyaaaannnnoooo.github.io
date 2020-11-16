@@ -1,0 +1,32 @@
+@font-face {
+    font-family: 'pixel';
+    src: url('../fonts/Px437_ITT_BIOS.ttf');
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 100%;
+    scrollbar-color: #4edcca #000;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    font-family: 'pixel', monospace;
+    color: #4edcca;
+    background-color: #000;
+}
+
+.main{
+    /* background-color: blue; */
+    max-width: 300px;
+    height: auto;
+    margin: auto;
+}
+
+.main p{
+    font-size: 0.75rem;
+}
