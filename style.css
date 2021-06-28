@@ -11,14 +11,15 @@
 
 html {
     font-size: 100%;
-    scrollbar-color: #0f0 #000;
+    scrollbar-color: #0f0 #00f;
 }
 
 body {
     padding: 0;
     margin: 0;
     font-family: 'pixel', monospace;
-    width: 300%;
+    background-color: blue;
+    /* width: 300%; */
     /* background-color: #000; */
 }
 
@@ -36,8 +37,8 @@ h1, h2, h3 {
 }
 
 .container {
-    background-color: #000;
-    width: 300%;
+    /* background-color: #000; */
+    /* width: 300%; */
     height: 100vh;
     position: fixed;
     left: 0px;
@@ -87,7 +88,7 @@ div.citation a {
 .column {
     font-size: 1.5rem;
     padding: 5px;
-    word-wrap: break-word;
+    /* word-wrap: break-word; */
     position: relative;
     /* border: 2px solid #00f; */
     width: 10vw;
@@ -95,7 +96,7 @@ div.citation a {
     /* line-height: 0.8em; */
     float: left;
     /* background-color: #fff; */
-    overflow-y: scroll;
+    /* overflow-y: scroll; */
     -webkit-transition: width 2s, -webkit-transform 2s;
     /* Safari */
     -ms-transition: width 2s, -ms-transform 2s;
@@ -103,11 +104,11 @@ div.citation a {
     transition: width 2s, transform 2s;
 }
 
-.column:hover {
+ .column:hover {
     background-color: #00f;
     color: #fff;
-    width: 40vw;
-    line-height: 1.5em;
+    /* width: 40vw; */
+    /* line-height: 1.5em; */
     /* transform: rotate3d(1, 2.0, 3.0, 10deg); */
 }
 
@@ -271,6 +272,39 @@ div.citation a {
     /* border: 2px solid #555555; */
 }
 
+body {
+    width: 100%;
+}
+
+.container {
+    display: inline;
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+.column {
+    width: 65%;
+    margin: auto;
+    height: auto;
+    /* line-height: 0.8em; */
+    float: none;
+    /* background-color: #fff; */
+    /* overflow-y: scroll; */
+    -webkit-transition: none;
+    /* Safari */
+    -ms-transition: none;
+    /* mozilla */
+    transition: none;
+    background-color: #00f;
+    color: #fff;
+    border-bottom: solid 3px red;
+}
+
+/* .column:hover {
+    width: 100%;
+} */
+/* 
 @media only screen and (max-width: 999px) {
     html {
         font-size: 75%;
@@ -287,21 +321,20 @@ div.citation a {
     .column {
         width: 100%;
         height: auto;
-        /* line-height: 0.8em; */
+         line-height: 0.8em; 
         float: none;
-        /* background-color: #fff; */
-        /* overflow-y: scroll; */
+        /* background-color: #fff; 
+        /* overflow-y: scroll; 
         -webkit-transition: none;
-        /* Safari */
+        /* Safari 
         -ms-transition: none;
-        /* mozilla */
+        /* mozilla 
         transition: none;
         background-color: #00f;
         color: #fff;
         border-bottom: solid 3px red;
     }
-
     .column:hover {
         width: 100%;
     }
-}
+} */
