@@ -1,0 +1,102 @@
+body {
+    background-color: black;
+}
+
+.header {
+    margin: auto;
+
+}
+
+.header h1 {
+    color: white;
+    text-shadow: 1px 1px green;
+
+}
+
+.img-container {
+    cursor: pointer;
+    margin: 5px;
+    width: 19%;
+    height: 150px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.img-container p {
+    color: white;
+    text-shadow: 1px 1px blue;
+}
+
+.container {
+    width: 100%;
+    display: flex;
+    flex-flow: column;
+}
+
+.main {
+    width: 100%;
+    display: flex;
+    flex-flow: row;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.speak-box {
+    pointer-events: none;
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    mix-blend-mode: exclusion;
+}
+
+.speech-container {
+    display: block;
+    pointer-events: inherit;
+    width: 650px;
+    max-height: auto;
+    background-color: black;
+    color: white;
+    text-shadow: 1px 1px red;
+
+    white-space: pre-wrap;
+    /* CSS3 */
+    white-space: -moz-pre-wrap;
+    /* Firefox */
+    white-space: -pre-wrap;
+    /* Opera <7 */
+    white-space: -o-pre-wrap;
+    /* Opera 7 */
+    word-wrap: break-word;
+    mix-blend-mode: exclusion;
+
+}
+
+/*tool tip hel styling*/
+
+[data-title] {
+    /* position: relative; */
+    /* cursor: help; */
+}
+
+.tooltip {
+    /* content: attr(data-title); */
+    z-index: 99999999999;
+    display: none;
+    position: fixed;
+    max-width: 250px;
+    padding: 0.25rem;
+    /* border-radius: 2px; */
+    background: #cccd;
+    color: #00f;
+    font-size: 12px;
+    /* font-family: sans-serif; */
+    box-shadow: #f00 3px 3px;
+}
