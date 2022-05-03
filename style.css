@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css?family=Source+Code+Pro:500,900&subset=latin-ext');
-@import url('https://fonts.googleapis.com/css?family=Cormorant:700|EB+Garamond:500');
 @font-face {
     font-family: 'pixel';
     src: url('fonts/PxPlus_VGA_SquarePx.ttf'), url('fonts/PxPlus_VGA_SquarePx.woff');
@@ -19,33 +17,24 @@ body {
     margin: 0;
     font-family: 'pixel', monospace;
     background-color: blue;
-    /* width: 300%; */
+    /* width: 100%; */
     /* background-color: #000; */
 }
 
 .column p, .column tr, .column li {
     /* font-family: 'Times New Roman', Times, serif; */
-    font-family: 'EB Garamond', serif;
+    /* font-family: 'EB Garamond', serif; */
+    font-family: 'Courier New', Courier, monospace;
     /* font-family: 'Cormorant', serif; */
 }
 
-h1, h2, h3 {
-    letter-spacing: 2px;
-    line-height: 1em;
-    color: #fff;
-    text-shadow: 4px 4px 3px #0f0;
-}
 
 .container {
-    /* background-color: #000; */
-    /* width: 300%; */
+    width: 100%;
     height: 100vh;
     position: fixed;
     left: 0px;
-    /* left: 50%;
-    transform: translate(-50%, 0);
-    -webkit-transform: translate(-50%, 0);
-    -ms-transform: translate(-50%, 0); */
+    overflow-y: scroll;
 }
 
 .reveal {
@@ -86,27 +75,18 @@ div.citation a {
 }
 
 .column {
-    font-size: 1.5rem;
+    font-size: 1rem;
     padding: 5px;
-    /* word-wrap: break-word; */
-    position: relative;
-    /* border: 2px solid #00f; */
-    width: 10vw;
-    height: 100vh;
-    /* line-height: 0.8em; */
-    float: left;
-    /* background-color: #fff; */
-    /* overflow-y: scroll; */
-    -webkit-transition: width 2s, -webkit-transform 2s;
-    /* Safari */
-    -ms-transition: width 2s, -ms-transform 2s;
-    /* mozilla */
-    transition: width 2s, transform 2s;
+
+    width: 65%;
+    margin: auto;
+    height: auto;
+    color: #fff;
 }
 
- .column:hover {
+.column:hover {
     background-color: #00f;
-    color: #fff;
+    /* color: #fff; */
     /* width: 40vw; */
     /* line-height: 1.5em; */
     /* transform: rotate3d(1, 2.0, 3.0, 10deg); */
@@ -114,7 +94,7 @@ div.citation a {
 
 .column a {
     /* background: #fff; */
-    font-size: 2rem;
+    font-size: 1.25rem;
     color: #0f0;
     text-decoration: none;
     /* font-weight: bolder; */
@@ -157,78 +137,13 @@ div.citation a {
     color: #f00;
 }
 
-.column:hover h1 {
-    color: #0f0;
-    text-shadow: none;
-}
-
-.column button {
-    /* background: none; */
-    font-family: 'EB Garamond', serif;
-    font-size: 1rem;
-    border-radius: 25px;
-    /* text-decoration: none; */
-    /* border: none; */
-    /* text-align: left; */
-}
-
 .column img {
     width: 100%;
-    /* max-width: 500px; */
-    height: auto;
-    border-radius: 2%;
-}
-
-.column iframe {
-    width: 100%;
     height: auto;
 }
 
-#selected-text {
-    /* z-index: 9999999; */
-    color: #00f;
-    position: fixed;
-    left: 0px;
-    top: 0px;
-    width: 100vw;
-    height: 100vh;
-    font-size: 9rem;
-    line-height: 0.7em;
-    font-weight: bolder;
-    word-wrap: break-word;
-    hyphens: auto;
-    text-transform: uppercase;
-    display: flex;
-    justify-content: center;
-    /* align horizontal */
-    align-items: center;
-    /* align vertical */
-    overflow-y: scroll;
-}
-
-#teaching {
-    /* display: none; */
-    /* width: 40vw; */
-}
-
-#games {
-    /* display: none; */
-    /* width: 40vw; */
-}
-
-#html-show {
-    display: none;
-    font-size: 0.75rem;
-    position: fixed;
-    right: 0px;
-    top: 0px;
-    width: 50%;
-    height: 100vh;
-    word-wrap: break-word;
-    text-overflow: ellipsis;
-    overflow-y: scroll;
-    background-color: #0f0;
-    z-index: 999;
+.column pre {
+    font-size: max(0.25rem, 1vw);
 }
 
 #p5Sketch {
@@ -272,34 +187,12 @@ div.citation a {
     /* border: 2px solid #555555; */
 }
 
-body {
-    width: 100%;
-}
-
-.container {
+/* .container {
     display: inline;
     position: relative;
     width: 100%;
     height: auto;
-}
-
-.column {
-    width: 65%;
-    margin: auto;
-    height: auto;
-    /* line-height: 0.8em; */
-    float: none;
-    /* background-color: #fff; */
-    /* overflow-y: scroll; */
-    -webkit-transition: none;
-    /* Safari */
-    -ms-transition: none;
-    /* mozilla */
-    transition: none;
-    background-color: #00f;
-    color: #fff;
-    border-bottom: solid 3px red;
-}
+} */
 
 /* .column:hover {
     width: 100%;
