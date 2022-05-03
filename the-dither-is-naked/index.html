@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>the dither is naked</title>
+    <link rel="icon" type="image/png" href="../img/icon.png">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="column" id="dither-1">
+        <h1>
+            GENEALOGY OF THE DITHER IS NAKED!
+        </h1>
+        <p style="font-size: 75%">
+            <u>If you don't want to read the whole text just click the following links to see the different stages of
+                the
+                project.</u>
+        <ul>
+            <li>
+                <a href="http://prettydither.tumblr.com/" target="_blank">Tumblr-Bot</a>
+            </li>
+            <li>
+                <a href="https://twitter.com/tobonay" target="_blank">Twitter-Bot</a>
+            </li>
+            <li>
+                <a href="https://github.com/Yyyyaaaannnnoooo/DitherFont_v_01" target="_blank">Dither Font Builder</a>
+            </li>
+            <li>
+                <a href="http://yyyyyyyy.xyz/dither/" target="_blank">Dither WEB APP</a>
+            </li>
+        </ul>
+        </p>
+        <p>
+            My first experience with
+            <u>dither</u> was during my my first year of my Masters. During the first year I needed to print a gradient,
+            but
+            our
+            printer was not good enough. The prints were full of
+            <u>artifacts</u> due to the large amount of colors in a gradient. I decided therefore to use the Photoshop
+            built-in
+            tool for colour palette reduction. The tool provided various options to choose between different
+            <u>dither</u> algorithms. This was the result I had while playing with the tool.
+        </p>
+        <img src="../img/proto_dither.gif" alt="">
+        <div class="citation">
+            WOW!
+            <br> EYE BLEEDING!
+        </div>
+        <p>
+            But it was olnly one year later that I mastered the
+            <a href="https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering"
+                target="_blank">Floyd–Steinberg</a>
+            dithering algorithm. This was possible also thanks to
+            <a href="https://github.com/danielepiccone/dithering_algorithms" target="_blank">Daniele Piccone</a>,
+            <a href="http://danieltemkin.com/DitherStudies/About" target="_blank">Daniel Temkin</a> and their amazing
+            work.
+            Last and but not least this text about
+            <a href="http://www.efg2.com/Lab/Library/ImageProcessing/DHALF.TXT" target="_blank">"digital halftoning, or
+                dithering"</a> was quite helpful to understand the mechanics of
+            <u>dithering</u>.
+            <br>
+            <a href="https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering"
+                target="_blank">Floyd–Steinberg</a>
+            dithering works by using an error diffusion algortihm
+        </p>
+        <div class="citation">
+            meaning it pushes (adds) the residual quantization error of a pixel onto its neighboring pixels.
+        </div>
+        <p>
+            It spreads the error according to some hard-coded values as follows:
+        </p>
+        <table style="width: 100%; font-size: 75%">
+            <tr>
+                <th>[ ]</th>
+                <th>[ ]</th>
+                <th>[ ]</th>
+            </tr>
+            <tr>
+                <th>[ ]</th>
+                <th>[*]</th>
+                <th>[7/16]</th>
+            </tr>
+            <tr>
+                <th>[3/16]</th>
+                <th>[5/16]</th>
+                <th>[1/16]</th>
+            </tr>
+        </table>
+        <p>
+            <u style="font-size: 75%;">The pixel with the * indicates the pixel being currently scanned by the
+                algorithm.</u>
+            <br>
+            <br> Those values became my playground for the exploration of the
+            <u>dithering</u> algorithm. My first step was to change the common
+            <u>divisor (16)</u> of the those hard-coded values.
+        </p>
+        <p>
+            This lead to the creation of a
+            <a href="http://prettydither.tumblr.com/" target="_blank">Tumblr-Bot</a>, posting dithered gradients with
+            random
+            values as dividend in the error quantization algorithm.
+        </p>
+        <img src="../img/DitherWEB.png " alt=" ">
+        <p>
+            The next step was to create a
+            <a href="https://twitter.com/tobonay" target="_blank">Twitter-Bot</a>, reacting to the
+            <u>#prettyDither</u> hashtag, followed by two colors, i.e. #prettyDither
+            <span style="background: #fff; color: #f00">red</span>
+            <span style="background: #fff; color: #0f0">green</span>
+        </p>
+        <iframe src="https://player.vimeo.com/video/219866411" frameborder="0"></iframe>
+        <p>
+            In order to gain a better control over the algorithm I decided to control also the the
+            <u>divisor</u> of the error quantization algortihm
+        </p>
+        <table style="width: 100%; font-size: 75%">
+            <tr>
+                <th>divisor
+                    <br>–––––––
+                    <br>dividend
+                </th>
+                <th>divisor
+                    <br>–––––––
+                    <br>dividend
+                </th>
+                <th>divisor
+                    <br>–––––––
+                    <br>dividend
+                </th>
+            </tr>
+            <tr>
+                <th>divisor
+                    <br>–––––––
+                    <br>dividend
+                </th>
+                <th>divisor
+                    <br>–––––––
+                    <br>dividend
+                </th>
+                <th>divisor
+                    <br>–––––––
+                    <br>dividend
+                </th>
+            </tr>
+            <tr>
+                <th>divisor
+                    <br>–––––––
+                    <br>dividend
+                </th>
+                <th>divisor
+                    <br>–––––––
+                    <br>dividend
+                </th>
+                <th>divisor
+                    <br>–––––––
+                    <br>dividend
+                </th>
+            </tr>
+        </table>
+        <p>
+            I implemented this to control the the calculation of the quantization error among all the neighboring
+            pixels,
+            not only the
+            4 in use in the Floyd–Steinberg algorithm. this lead to the development of this
+            <a href="http://yyyyyyyy.xyz/dither/" target="_blank">website</a>, that allows user to control each part of
+            the
+            algorithm.
+        </p>
+        <div class="citation">
+            here some results
+        </div>
+        <br>
+        <br>
+        <img src="../img/dither_08.jpg" alt="">
+        <br>
+        <br>
+        <img src="../img/dither_11.jpg" alt="">
+        <br>
+        <br>
+        <p>
+            The interesting thing about the
+            <u>dithering</u> algorithm, is its
+            <u>camouflaging</u> attitude. What do I mean? Good
+            <u>dithering</u> algorithms, when properly developed, should remain unnoticed by the viewers eyes. Curiously
+            enough
+            when the same algorithm is applied to gradients its
+            <u>camouflaging</u> qualities get weaker revealing the algorithm structure in the form of colorful patterns.
+            The
+            additional
+            control on the quantization error algortihm allows for more in depth analysis of the
+            <u>dithering</u> process.
+        </p>
+        <div class="citation">DESPITE THE VISUAL RESULTS OF THE EXPLOITATION OF THE LATTER ALGORITHM, MY INTERESTS LIE
+            ALSO IN THE REVELATORY QUALITY
+            OF THE PROJECT EXPOSING THE ALGORITHM AS ITSELF.</div>
+    </div>
+
+</body>
+
+</html>
