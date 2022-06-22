@@ -1,3 +1,11 @@
+::-webkit-scrollbar {
+    display: none;
+}
+
+* {
+    scrollbar-width: none;
+}
+
 body {
     background-color: black;
 }
@@ -39,6 +47,7 @@ body {
     flex-flow: row;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
 }
 
 .speak-box {
@@ -54,15 +63,16 @@ body {
     align-items: center;
     justify-content: center;
 
-    mix-blend-mode: exclusion;
+    /* mix-blend-mode: exclusion; */
 }
 
 .speech-container {
     display: block;
     pointer-events: inherit;
     width: 650px;
+    height: 85%;
     max-height: auto;
-    background-color: black;
+    /* background-color: black; */
     color: white;
     text-shadow: 1px 1px red;
 
@@ -75,7 +85,8 @@ body {
     white-space: -o-pre-wrap;
     /* Opera 7 */
     word-wrap: break-word;
-    mix-blend-mode: exclusion;
+    /* mix-blend-mode: exclusion; */
+    overflow-y: scroll;
 
 }
 

@@ -97,8 +97,25 @@ function type_speak(term) {
     if (c == ' ') speak_box.innerHTML += '&nbsp;'
     speak_box.innerText += c
     type_index++
+    check_scroll()
     if (type_index >= term.length) clearInterval(type_interval)
   }, 50)
+}
+
+// function that scrolls down when text reachse bottom of div
+const scroll_down = () => {
+  const scroll_div = document.getElementById('speak-box')
+  scroll_div.scrollTop = scroll_div.scrollHeight
+}
+// function that checks if the typed text has reached the bottom of the div
+const check_scroll = () => {
+  const scroll_div = document.getElementById('speak-box')
+  const scroll_div_height = scroll_div.scrollHeight
+  const div_height = scroll_div.offsetHeight
+  console.log(scroll_div_height, div_height);
+  if (scroll_div_height > div_height) {
+    scroll_down()
+  }
 }
 
 let play = true
