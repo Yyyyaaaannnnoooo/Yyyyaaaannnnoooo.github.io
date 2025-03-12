@@ -21,7 +21,9 @@ body {
     /* background-color: #000; */
 }
 
-.column p, .column tr, .column li {
+.column p,
+.column tr,
+.column li {
     /* font-family: 'Times New Roman', Times, serif; */
     /* font-family: 'EB Garamond', serif; */
     font-family: 'Courier New', Courier, monospace;
@@ -77,7 +79,6 @@ div.citation a {
 .column {
     font-size: 1rem;
     padding: 5px;
-
     width: 65%;
     margin: auto;
     height: auto;
@@ -85,7 +86,7 @@ div.citation a {
 }
 
 .column:hover {
-    background-color: #00f;
+    /* background-color: #00f; */
     /* color: #fff; */
     /* width: 40vw; */
     /* line-height: 1.5em; */
@@ -155,6 +156,40 @@ div.citation a {
     height: 200px; */
 }
 
+@media only screen and (min-width: 650px) {
+    /* @media (max-width: 750px) { */
+    /* @media (max-width: 600px) { */
+
+
+    .column {
+        width: 85%;
+        height: auto;
+        float: none;
+    }
+    
+    .column a {
+        font-size: 2.25rem;
+    }
+    .column p {
+        font-size: 2rem;
+        line-height: 1em;
+    }
+
+
+    /* .container {
+        display: inline;
+        position: relative;
+        width: 100%;
+        height: auto;
+    } */
+
+
+    .column pre {
+        font-size: 0.65rem;
+    }
+
+}
+
 /* custom scrollbars */
 
 ::-webkit-scrollbar-track {
@@ -187,6 +222,10 @@ div.citation a {
     /* border: 2px solid #555555; */
 }
 
+/* Media Query */
+
+
+
 /* .container {
     display: inline;
     position: relative;
@@ -196,38 +235,4 @@ div.citation a {
 
 /* .column:hover {
     width: 100%;
-} */
-/* 
-@media only screen and (max-width: 999px) {
-    html {
-        font-size: 75%;
-    }
-    body {
-        width: 100%;
-    }
-    .container {
-        display: inline;
-        position: relative;
-        width: 100%;
-        height: auto;
-    }
-    .column {
-        width: 100%;
-        height: auto;
-         line-height: 0.8em; 
-        float: none;
-        /* background-color: #fff; 
-        /* overflow-y: scroll; 
-        -webkit-transition: none;
-        /* Safari 
-        -ms-transition: none;
-        /* mozilla 
-        transition: none;
-        background-color: #00f;
-        color: #fff;
-        border-bottom: solid 3px red;
-    }
-    .column:hover {
-        width: 100%;
-    }
 } */

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PToDS</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #c {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    .main {
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding: 0px 10px 0px 10px;
+      z-index: 1;
+      width: 65%;
+      height: auto;
+      /* overflow-y: scroll; */
+      background-color: rgba(0, 0, 0, 0.3);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1em;
+      border-radius: 10px;
+    }
+
+    .main h2{
+      color: #efefef;
+    }
+
+    .main p{
+      color: #33f;
+      font-weight: bold;
+    }
+
+    .main i {
+      color: #fc3;
+    }
+    .main b {
+      color: #3cf;
+    }
+
+    .btn{
+      /* position: absolute; */
+      /* bottom: 5px; */
+      /* right: 5px; */
+      /* this is a button and needs some buttony css */
+      cursor: pointer;
+      /* background-color: #f1f1f1; */
+      /* border: 1px solid black; */
+      /* border should be slightly round */
+      /* border-radius: 5px; */
+      padding: 5px;
+      /* should be a wide as the text */
+      width: max-content;
+      color: #f33;
+      font-weight: bold;
+      font-size: 1.5em;
+    }
+    /* media query for devices */
+    @media only screen and (max-width: 600px) {
+      .main {
+        width: 80%;
+        height: 100vh;
+        overflow-y: scroll;
+        /* padding-bottom: 100px; */
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="c"></canvas>
+  <section class="main">
+    <h2>Postcard Theory of Digital Scarcity</h2>
+    <div class="btn">
+      ⤴⤴⤴⤴⤴
+    </div>
+    <p>
+      <i>
+        Navigate the archive by clicking and dragging with your mouse. Use the scroll wheel to zoom in and out. Click on
+        a postcard to flip it and view the back.
+      </i>
+    </p>
+
+    <p>
+      Postcard Theory of Digital Scarcity is a project that explores the tension between constructed scarcity and
+      infinite reproducibility in the digital age.</p>
+
+    <p>
+      The postcards were generated entirely within the internet, never existing as physical objects until their
+      transformation into printed artifacts. Their uniqueness is established through the authoritative stamp of the
+      postal service and the official date marking, granting them a singular status.
+    </p>
+
+    <p>
+      As materialized fragments of network interactions—combining map screenshots, digital postal services, and
+      online-generated imagery—these artworks initially embody a rare, physical presence. However, their subsequent
+      digital archiving disrupts this material exclusivity, returning them to the realm of digital ubiquity and infinite
+      circulation on the internet.
+    </p>
+    <p>
+      <b>
+        The physical postcards are available for in person view. Contact the author to make an appointment
+      </b>
+    </p>
+
+    
+
+  </section>
+
+  <script>
+    let open = true;
+    const btn = document.querySelector('.btn')
+    btn.addEventListener('click', () => {
+      // this should be a function that makes the .main show only the title
+      // therefore making all p elements invisible
+      const main = document.querySelector('.main');
+      const p = main.querySelectorAll('p');
+      if (!open) {
+        p.forEach((el) => {
+          main.style.height = '100vh';
+          el.style.display = 'block';
+          open = true;
+          btn.textContent = '⤴⤴⤴⤴⤴';
+        });
+        return;
+      } else {
+        p.forEach((el) => {
+          main.style.height = 'auto';
+          el.style.display = 'none';
+          open = false;
+          btn.textContent = '⤵⤵⤵⤵⤵';
+        });
+      }
+    });
+  </script>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./js/build/three.module.js",
+        "three/addons/": "./js/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="./js/scene.js"> </script>
+</body>
+
+</html>
