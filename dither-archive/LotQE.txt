@@ -1,0 +1,20 @@
+An Archive Theory of Clustering Tiranny
+
+The Lore of Error Diffusion
+
+Is a game I am developing in three.js, i do not need any code, but I need dialogues for main 8 npc and for a single questline where the player needs to save images.
+
+npc 1 (rather happy character): he is the first encountered npc and introduces the player to the game and the lore. he explains how dither was born in 1976 from floyd-steinberg using error diffusion. an approach not possible on gpus. then he also introduces the rotten trought of the archive and the clustering of images based on tsne. furthermore he hints at the fact that this "pretty" dither were born from the usurpation of the quantzation error.
+
+npc 2 (found sitting and somber): he explains the player the how before being transfered to this archive they lived on on tumblr.com. but after the acquisition of the latter they were forced to move to this other archive where it's owner decide to separate the dithers based on his own criteria. forcing them in different clusters they have been separated to live away from friends and families.
+
+npc 3 (somewhat happy): tells the story of how clustering is done by total invasion of every dither privacy every single pixel composing their essence has been exposed and analysed for them to be classified. he progress explaining how this was the most humiliating thing he ever suffered in his life, yet he remains positive at the thought that must have been the lowest experience in his life and that he probably would never face such horror anymore
+
+npc 4 (agitated cursing): this npc tells the player the story for how they were born. out of the pettyness of their creator who wanted to challenge the beauty norms imposed by the perfect quantization error table. their creator decided to explore alternative "glitch" aesthetic. their life was forged trough experimentation with the alteration of quantization error tables. this had the consecquence to make them born "different". he continues lamenting how their creator in its pretentious critique was replicating the same totalizing mistake of Floy-Steynberg of deciding what "normality" should look like
+
+npc 5 (sobbing): this npc tells his story on how he befriended and had a happy life in his former archive were he was born. he tells a personal love story with another dither that he has no idea were they are located at the moment
+
+
+	
+
+npac 7 ()

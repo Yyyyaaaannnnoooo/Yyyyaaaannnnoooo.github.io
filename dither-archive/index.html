@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PToDS</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    
+  </style>
+</head>
+
+<body>
+  <canvas id="c"></canvas>
+  <div id="blocker">
+    <div id="instructions">
+      <p style="font-size:36px">
+        Click to play
+      </p>
+      <p>
+        Move: WASD<br />
+        Jump: SPACE<br />
+        Look: MOUSE
+      </p>
+    </div>
+  </div>
+  <div class="crosshair"></div>
+
+  <section class="main">
+    <div class="image"></div>
+    <div class="btn">CLOSE!</div>
+    <p>
+      <i>
+        if you like the image download it by right clicking on it!
+      </i>
+    </p>
+  </section>
+
+  <script>
+
+  </script>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./js/build/three.module.js",
+        "three/addons/": "./js/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="./js/scene.js"> </script>
+</body>
+
+</html>

@@ -1,0 +1,93 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+}
+
+canvas{
+  background: none !important;
+}
+
+#c {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  /* width: 100%; */
+  /* height: 100vh; */
+}
+
+.main {
+  visibility: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 0px 10px 0px 10px;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+  /* overflow-y: scroll; */
+  background-color: rgba(0, 0, 0, 0.3);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1em;
+  border-radius: 10px;
+  display: flex;
+}
+
+.main h2 {
+  color: #efefef;
+}
+
+.main p {
+  color: #33f;
+  font-weight: bold;
+}
+
+.main i {
+  color: #fc3;
+}
+
+.main b {
+  color: #3cf;
+}
+
+.btn {
+  /* position: absolute; */
+  /* bottom: 5px; */
+  /* right: 5px; */
+  /* this is a button and needs some buttony css */
+  cursor: pointer;
+  /* background-color: #f1f1f1; */
+  /* border: 1px solid black; */
+  /* border should be slightly round */
+  /* border-radius: 5px; */
+  padding: 5px;
+  /* should be a wide as the text */
+  width: max-content;
+  color: #f33;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+/* Add this to your CSS */
+.crosshair {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background-color: #f33;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none; /* Ensure it doesn’t block clicks */
+}
+
+/* media query for devices */
+@media only screen and (max-width: 600px) {
+  .main {
+    width: 80%;
+    height: 100vh;
+    overflow-y: scroll;
+    /* padding-bottom: 100px; */
+  }
+}

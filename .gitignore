@@ -29,3 +29,7 @@ Temporary Items
 .vscode
 
 proto/js/three-master/*
+dither-archive/imgs/media/*
+dither-archive/imgs/normals/*
+dither-archive/audio/*
+dither-archive/audio

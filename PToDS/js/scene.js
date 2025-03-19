@@ -1,17 +1,16 @@
 import * as THREE from 'three';
-
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MapControls } from 'three/addons/controls/MapControls.js';
+import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js'
 import { Water } from 'three/addons/objects/Water.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-import {Tween, Easing} from 'https://unpkg.com/@tweenjs/tween.js@23.1.3/dist/tween.esm.js'
+import { Tween, Easing } from 'https://unpkg.com/@tweenjs/tween.js@23.1.3/dist/tween.esm.js'
 
 
 
@@ -73,14 +72,9 @@ function init() {
   skybox();
   // bloom_pass_composer();
   clock = new THREE.Clock();
-  // CONTROLS
-  // controls = new OrbitControls(camera, renderer.domElement);
-  // controls.maxPolarAngle = Math.PI * 0.495;
-  // // controls.minDistance = 4;
-  // // controls.maxDistance = 40;
-  // // controls.target.copy(camera.position)
   // init_controls();
   init_map_controls();
+  // init_first_person_controls();
 
   window.addEventListener('resize', onWindowResize);
   init_3d_models();
@@ -94,13 +88,6 @@ const animation_type = {
   filter: 'filter'
 }
 
-
-// async texture loader
-function loadTexture(url) {
-  return new Promise((resolve) => {
-    new THREE.TextureLoader().load(url, resolve);
-  });
-}
 
 
 function init_3d_models() {
@@ -125,7 +112,7 @@ function basic_texture_load() {
             // apply texture to plane geometry
             const geometry = new THREE.PlaneGeometry(w, h);
             // const geometry = new THREE.BoxBufferGeometry(512, 250, 1);
-            const front_material = new THREE.MeshBasicMaterial({ map: texture_front});
+            const front_material = new THREE.MeshBasicMaterial({ map: texture_front });
             const back_material = new THREE.MeshBasicMaterial({ map: texture_back });
             const object_front = new THREE.Mesh(geometry, front_material);
             const object_back = new THREE.Mesh(geometry, back_material);
@@ -137,8 +124,8 @@ function basic_texture_load() {
             const postcard = new THREE.Group();
             postcard.add(object_front);
             postcard.add(object_back);
-            postcard.position.x = (pos_from_index(i).x * 60) - (3*60);
-            postcard.position.z = (pos_from_index(i).y * 60) - (2*60);
+            postcard.position.x = (pos_from_index(i).x * 60) - (3 * 60);
+            postcard.position.z = (pos_from_index(i).y * 60) - (2 * 60);
             postcard.position.y = 0;
             // rotate images belly up
             scene.add(postcard);
@@ -146,41 +133,6 @@ function basic_texture_load() {
           });
       });
   }
-}
-
-function async_texture_load() {
-  Promise.all([
-    ...front_urls.map(loadTexture),
-    ...back_urls.map(loadTexture),
-  ]).then((loadedTextures) => {
-    const frontTextures = loadedTextures.slice(0, NUM_IMAGES);
-    const backTextures = loadedTextures.slice(NUM_IMAGES);
-    console.log(frontTextures);
-    // const planes = [];
-    // const spacing = 6;
-    frontTextures.forEach((frontTexture, index) => {
-      const backTexture = backTextures[index];
-      const dimensions = set_image_size(frontTexture);
-      const w = dimensions.w;
-      const h = dimensions.h;
-      // apply texture to plane geometry
-      const geometry = new THREE.PlaneGeometry(w, h);
-
-      // const geometry = new THREE.PlaneGeometry(5, 5);
-      const frontMaterial = new THREE.MeshBasicMaterial({ map: frontTexture, side: THREE.FrontSide });
-      const backMaterial = new THREE.MeshBasicMaterial({ map: backTexture, side: THREE.BackSide });
-
-      const plane = new THREE.Mesh(geometry, [frontMaterial, backMaterial]);
-      // plane.position.x = (index - 5) * spacing;
-      plane.position.x = pos_from_index(index).x * 60 - (6*60);
-      plane.position.z = pos_from_index(index).y * 60  - (6*60);
-      plane.position.y = 0;
-      // rotate images belly up
-      plane.rotation.x = -Math.PI / 2;
-
-      scene.add(plane);
-    });
-  });
 }
 
 function pos_from_index(index) {
@@ -212,37 +164,37 @@ function set_image_size(texture) {
 
 // Click event
 window.addEventListener('pointerdown', (event) => {
-    pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-    pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    raycaster.setFromCamera(pointer, camera);
-    const intersects = raycaster.intersectObjects(postcards, true);
+  raycaster.setFromCamera(pointer, camera);
+  const intersects = raycaster.intersectObjects(postcards, true);
 
-    if (intersects.length > 0) {
-        const clickedCard = intersects[0].object.parent;
-        // console.log(clickedCard);
-        const isFlipped = flippedCards.has(clickedCard);
+  if (intersects.length > 0) {
+    const clickedCard = intersects[0].object.parent;
+    // console.log(clickedCard);
+    const isFlipped = flippedCards.has(clickedCard);
 
-        // Animate rotation using TWEEN.js
-        tween = new Tween(clickedCard.rotation)
-            .to({ z: isFlipped ? 0 : Math.PI }, 600)
-            .easing(Easing.Quadratic.Out)
-            .start();
+    // Animate rotation using TWEEN.js
+    tween = new Tween(clickedCard.rotation)
+      .to({ z: isFlipped ? 0 : Math.PI }, 600)
+      .easing(Easing.Quadratic.Out)
+      .start();
 
-        // Update flipped state
-        if (isFlipped) {
-            flippedCards.delete(clickedCard);
-        } else {
-            flippedCards.add(clickedCard);
-        }
+    // Update flipped state
+    if (isFlipped) {
+      flippedCards.delete(clickedCard);
+    } else {
+      flippedCards.add(clickedCard);
     }
+  }
 });
 
 function animate(timestamp) {
   requestAnimationFrame(animate);
   if (water !== undefined) water.material.uniforms['time'].value += 1.0 / (60.0 * 10);
   // updateSun();
-  if(tween != null)tween.update();
+  if (tween != null) tween.update();
   render()
 }
 
@@ -306,8 +258,6 @@ function init_map_controls() {
 
   controls = new MapControls(camera, renderer.domElement);
 
-  //controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
-
   controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
   controls.dampingFactor = 0.05;
   controls.zoomSpeed = 0.25;
@@ -317,16 +267,23 @@ function init_map_controls() {
   controls.maxDistance = 300;
 
   controls.maxPolarAngle = 0;
-  controls.enableRotate = false; 
+  controls.enableRotate = false;
 
   // 🔥 Restrict panning (keep within a boundary)
-const panLimit = 200; // Max movement in X and Z
-controls.addEventListener('change', () => {
+  const panLimit = 200; // Max movement in X and Z
+  controls.addEventListener('change', () => {
     controls.target.x = Math.max(-panLimit, Math.min(panLimit, controls.target.x));
     controls.target.z = Math.max(-panLimit, Math.min(panLimit, controls.target.z));
     camera.position.x = Math.max(-panLimit, Math.min(panLimit, camera.position.x));
     camera.position.z = Math.max(-panLimit, Math.min(panLimit, camera.position.z));
-});
+  });
+}
+
+function init_first_person_controls() {
+  controls = new FirstPersonControls(camera, renderer.domElement);
+  controls.movementSpeed = 70;
+  controls.lookSpeed = 0.05;
+  controls.lookVertical = true;
 }
 
 function build_renderer() {
@@ -523,20 +480,10 @@ function onWindowResize() {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
-// DEPRECATED
-function load_skybox(url) {
-  new RGBELoader()
-    .load(url, function (texture) {
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-      scene.background = texture;
-      scene.environment = texture;
-    });
-}
 
 function skybox() {
   sun = new THREE.Vector3();
   const waterGeometry = new THREE.PlaneGeometry(10000, 10000);
-  // const waterGeometry = new THREE.BoxGeometry(10, 10, 10);
   water = new Water(
     waterGeometry,
     {
@@ -588,29 +535,3 @@ function updateSun() {
 
   scene.environment = renderTarget.texture;
 }
-
-
-
-// suggestions tips
-
-// const help_tip = document.querySelector('div.tooltip')
-// console.log(help_tip);
-// document.onmousemove = mouse => {
-//   help_tip.style.top = mouse.y - 10 + 'px';
-//   help_tip.style.left = mouse.x + 10 + 'px';
-// }
-// function make_tooltips() {
-//   const tooltips_el = document.querySelectorAll('[data-title]')
-//   tooltips_el.forEach(tip => {
-//     tip.addEventListener('mouseover', elt => {
-//       help_tip.innerHTML = `MEMBER SINCE: <br>
-//       ${tip.dataset['title']}<br>
-//       REACH:<br>
-//       ${tip.dataset['reach']}`;
-//       help_tip.style.display = 'block';
-//     })
-//     tip.addEventListener('mouseleave', elt => {
-//       help_tip.style.display = 'none';
-//     })
-//   })
-// }
