@@ -4,3 +4,6 @@
 * add more animations for npc
 * add music
 * there is an issue with crossair on npc!
+* dialogues are still buggy one problem migth be in scene.js line 1320
+* need to add two phase dialogues for quests
+* task manager should advance tasks of different types

@@ -17,13 +17,24 @@ import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
-import{GodRays} from './post-process.js'
+import { GodRays } from './post-process.js'
+import { DataMosh } from './data-mosh-fx.js';
 
 import { NPC } from './npc.js'
 
-const npcs = []
+// import './helper-functions.js'
+import { Dithers } from './dithers.js';
+
+import { QuestManager } from './quest-manager.js';
+const questManager = new QuestManager()
+
+
+// const npcs = []
+let npcs = null
+let npcs_loaded = false
 let npc = null
 let gr = null
+let data_mosh = null
 const stats = new Stats();
 document.body.appendChild(stats.dom);
 
@@ -113,28 +124,7 @@ const bg_color = document.body.style;
 let cluster_centers
 
 let npc_interaction = false
-// console.log(bg_color);
-// add the urls in a 80 x 80 2D array
-// let url_index = 0;
-// for (let i = 0; i < rows; i++) {
-//   dither_urls.push([]);
-//   for (let j = 0; j < rows; j++) {
-//     const index = i * rows + j;
-//     if (index >= NUM_IMAGES) {
-//       break;
-//     }
-//     const obj = {
-//       x: i,
-//       y: j,
-//       url: dither_url + (index) + '.jpg',
-//       normal_url: normal_url + (index) + '.jpg',
-//       loaded: false,
-//       mesh: null
-//     };
-//     dither_urls[i].push(obj);
-//     url_index++;
-//   }
-// }
+let current_npc = null
 
 
 const manager = new THREE.LoadingManager();
@@ -147,107 +137,20 @@ const spotTarget = new THREE.Object3D();
 // let open = false;
 const btn = document.querySelector('.btn')
 btn.addEventListener('click', () => {
-
   main_div.style.visibility = 'hidden'
   controls.enabled = true;
-  //   // Request pointer lock again
   renderer.domElement.requestPointerLock();
-  //   // Hide cursor
-  // document.body.style.cursor = "none";
 });
 
+const dithers = new Dithers()
+dithers.load();
 
-// load JSON file
-fetch(dither_json_url)
-  .then(response => response.json())
-  .then(data => {
-    // console.log(data);
-    dither_urls = enhance_data(data);
-    dither_urls = assign_height_count(dither_urls);
-    console.log(dither_urls);
-    cluster_centers = get_cluster_centers();
-    console.log(cluster_centers);
-    init();
-  });
+setTimeout(() => {
+  console.log('start initializing stuff');
+  init()
+}, 2000)
 
-function enhance_data(data) {
-  const result = [];
-  for (let i = 0; i < data.length; i++) {
-    const obj = data[i];
-    const x = Math.floor(obj.x);
-    const y = Math.floor(obj.y);
-    // remove "/Users/ya/Documents/WEB/Yyyyaaaannnnoooo.github.io/dither-archive/" from image_path
-    const url = obj.image_path.replace('/Users/ya/Documents/WEB/Yyyyaaaannnnoooo.github.io/dither-archive/', '');
-    // const normal_url = normal_url + obj.index + '.jpg';
-    const new_obj = {
-      x: x,
-      y: y,
-      url: url,
-      cluster: obj.cluster,
-      // normal_url: normal_url,
-      loaded: false,
-      mesh: null
-    };
-    result.push(new_obj);
-  }
-  return result;
-}
-
-function assign_height_count(meshData) {
-  const positionCount = new Map(); // Track how many times (x, y) appears
-
-  return meshData.map((mesh) => {
-    const key = `${mesh.x},${mesh.y}`; // Unique key for each (x, y)
-
-    // Get current count and increment it
-    const count = positionCount.get(key) || 0;
-    positionCount.set(key, count + 1);
-
-    // Assign the count as the new "z" value
-    return { ...mesh, z: count };
-  });
-}
-
-const colors = [
-  new THREE.Color(0xffaaaa), // Red
-  new THREE.Color(0xaaffaa),  // Green
-  new THREE.Color(0xaaaaff), // Blue
-  new THREE.Color(0xffffaa),  // Yellow
-  new THREE.Color(0xffaaff),  // Purple
-  new THREE.Color(0xaaffff),  // Cyan
-  new THREE.Color(0xff88aa),  // Orange
-  new THREE.Color(0x8888ff)    // Light Blue
-];
-
-function get_cluster_centers() {
-  const result = [];
-  for (let i = 0; i < 8; i++) {
-    const cluster_arr = dither_urls.filter(item => item.cluster === i)
-    // console.log(cluster_arr);
-    const center = get_center(cluster_arr)
-    result.push({ cluster: i, center, color: colors[i] })
-  }
-  return result
-}
-
-function get_center(data) {
-  const xs = data.map(item => item.x)
-  const ys = data.map(item => item.y)
-  const sum_x = xs.reduce((acc, num) => acc + num, 0);
-  const sum_y = ys.reduce((acc, num) => acc + num, 0);
-  const avg_x = sum_x / xs.length;
-  const avg_y = sum_y / ys.length;
-  return { x: Math.floor(avg_x) + spacing, y: Math.floor(avg_y) + spacing }
-}
-
-// for (let i = 0; i < NUM_IMAGES; i++) {
-//   dither_urls.push(dither_url + i + '.jpg');
-// }
-
-
-// const slider = document.querySelector('#color')
-// const slider_azymuth = document.querySelector('#azymuth')
-// const slider_elevation = document.querySelector('#elevation')
+// dithers.load()
 
 
 function onWindowResize() {
@@ -264,21 +167,33 @@ function onWindowResize() {
   gr.PostProcess_onWindowResize();
 }
 
+// ✅ Detect mouse clicks
+canvas.addEventListener("click", (event) => {
+  if (selection_url !== null && npc_interaction === false) {
+    show_dither();
+  }
+  if (npc_interaction === true) {
+    progress_npc_interaction();
+  }
+});
+
 function init() {
   console.log('init');
-  scene_setup();
-  build_renderer();
+  init_scene();
+  init_renderer();
   // init_post_process();
   build_terrain();
+  clock = new THREE.Clock();
   gr = new GodRays(scene, renderer);
   gr.init_post_process();
+  // data_mosh = new DataMosh(renderer, scene, camera)
+  // data_mosh.load()
   // make_water();
   // add_sun();
   // add_spotligt();
   // add_pointlight();
   // skybox();
   // bloom_pass_composer();
-  clock = new THREE.Clock();
   // init_controls();
   // init_map_controls();
 
@@ -294,191 +209,62 @@ function init() {
     update_debug_pos();
     scene.add(debug_mesh);
   }
-
   // init_map_controls();
   init_first_person_controls();
-
-
-  window.addEventListener('resize', onWindowResize);
   init_3d_models();
-  init_npcs()
+  init_world_landmarks()
+  window.addEventListener('resize', onWindowResize);
+
+  player.show_debug(scene)
 }
 
-function load_gltf_model(url, texture) {
-  const loader = new GLTFLoader();
-  loader.load(url, function (gltf) {
-    // loader.load('js/three-master/examples/models/gltf/facecap.glb', function (gltf) {
-    // console.log(gltf);
-    object = gltf.scene;
-    // Compute the bounding box
-    console.log('model loaded');
-    const box = new THREE.Box3().setFromObject(object);
-    // Calculate the height
-    model_height = box.max.y - box.min.y;
-    // console.log(model_height);
-    const scaling = 2
-    // const offset = -(model_height / 2) * scaling
-    const offset = 0
-    // const camera_pos = camera.position.copy();
-    object.position.set(camera.position.x + 5, camera.position.y, camera.position.z); // Adjust as needed
-    object.scale.set(scaling, scaling, scaling); // Adjust as needed
-    camera.position.y = (model_height * scaling) - 0.25
-    scene.add(object);
-    gltf.animations.push(createIdleAnimation());
-    console.log(object);
-    createGUI(object, gltf.animations);
-    // 463F37_ACCFBB_818B78_91A494-512px.png
-    // 070B0C_B2C7CE_728FA3_5B748B-512px.png
-    // 312C34_A2AAB3_61656A_808494-512px.png
-    // 36220C_C6C391_8C844A_8B7B4C-512px.png
-    // 293534_B2BFC5_738289_8A9AA7-512px.png
-    // 394641_B1A67E_75BEBE_7D7256-512px.png
-    // 736655_D9D8D5_2F281F_B1AEAB-512px.png
-    // const matcap = build_matcap_material('textures/736655_D9D8D5_2F281F_B1AEAB-512px.png')
-    const material = build_material({ r: 255, g: 1, b: 0.5 }, 0, 1)
-    // const light = new THREE.PointLight(0xffffff, 20)
-    // light.position.set(camera.position.x + 5, camera.position.y+2, camera.position.z+2)
-    // scene.add(light)
+function animate(timestamp) {
+  requestAnimationFrame(animate);
+  if (water !== undefined) water.material.uniforms['time'].value += 1.0 / (60.0 * 10);
+  // if (terrain !== undefined) terrain.material.uniforms['time'].value += 1.0 / (60.0 * 10);
+  // updateSun();
+  if (tween != null) tween.update();
 
-    // console.log(material);
-    // const material = new THREE.MeshBasicMaterial({color: 0xffffff})
-    add_material(object, material)
-    // texture = build_texture('textures/painting.png')
-    // material.map = texture
-    // add_texture(object, texture)
-    // camera.lookAt(object.position);
-    const len = 1;
-    // build_eclosement(len, offset);
-
-    // Create a ring of lights in front of the cube
-    build_ring_light(len, offset, object.position);
-    // load_yt_data();
-    // animate();
-  }, undefined, function (error) {
-    console.error('An error occurred', error);
-  });
-  scene_loaded = true
-}
-
-
-function createGUI(model, animations) {
-
-  const states = ['Speak', 'Blink', 'LookDown', 'LookUp', 'LookLeft', 'LookRight', 'TurnDown', 'TurnUp', 'TurnLeft', 'TurnRight', 'Idle'];
-  const emotes = ['Angry', 'Sad', 'Smile', 'Worried'];
-
-  gui = new GUI();
-
-  mixer = new THREE.AnimationMixer(model);
-
-  actions = {};
-
-  for (let i = 0; i < animations.length; i++) {
-
-    const clip = animations[i];
-    const action = mixer.clipAction(clip);
-    actions[clip.name] = action;
-
-    if (emotes.indexOf(clip.name) >= 0 || states.indexOf(clip.name) >= 4) {
-      action.clampWhenFinished = true;
-      action.loop = THREE.LoopOnce;
-    }
-  }
-
-  // states
-
-  const statesFolder = gui.addFolder('States');
-
-  const clipCtrl = statesFolder.add(api, 'state').options(states);
-
-  clipCtrl.onChange(function () {
-    fadeToAction(api.state, 0.5);
-  });
-
-  statesFolder.open();
-
-  // expressions
-
-  face = model.getObjectByName('FemaleHead001');
-  console.log(face);
-  const expressions = Object.keys(face.morphTargetDictionary);
-  const expressionFolder = gui.addFolder('Expressions');
-
-  for (let i = 0; i < expressions.length; i++) {
-
-    expressionFolder.add(face.morphTargetInfluences, i, 0, 1, 0.01).name(expressions[i]);
-
-  }
-
-  activeAction = actions['Speak'];
-  activeAction.setLoop(THREE.LoopOnce);
-  activeAction.play()
-  activeAction.paused = true;
-
-  // window.onmousemove = (event) => {
-  //   const duration = activeAction.getClip().duration;
-  //   time = (event.clientX / innerWidth) * duration
-  //   // console.log(time);
-  //   // activeAction.time = time;
-  //   // mixer.setTime(time);
-  //   // mixer.update(0);
+  first_person_camera_animation();
+  if (debug) update_debug_pos();
+  stats.update(); // Update FPS counter
+  updateCameraHeight();
+  check_object_in_crosshair();
+  // check_distance_with_npcs();
+  // update_spotlight();
+  // update_pointlight();
+  const delta = clock.getDelta();
+  // if (mixer) mixer.update(delta);
+  // if (npc) {
+  //   npc.update()
   // }
-
-}
-
-function fadeToAction(name, duration) {
-  previousAction = activeAction;
-  activeAction = actions[name];
-  previousAction.fadeOut(duration);
-  activeAction
-    .reset()
-    .setEffectiveTimeScale(1)
-    .setEffectiveWeight(1)
-    .fadeIn(duration)
-    .play();
-}
-
-function build_ring_light(len, offset, pos) {
-  const lightRingRadius = len / 2; // Radius of the light ring
-  const numLights = 16; // Number of lights in the ring
-  const distance = 1;
-
-  for (let i = 0; i < numLights; i++) {
-    const angle = (i / numLights) * Math.PI * 2; // Calculate the angle for each light
-    const x = lightRingRadius * Math.cos(angle);
-    const y = lightRingRadius * Math.sin(angle);
-    const z = distance; // Distance from the object on the z-axis
-
-    const light = new THREE.PointLight(0xffffff, 5, 100);
-    light.position.set(x, y, z);
-    scene.add(light);
+  if (npcs_loaded) {
+    update_npcs_animations();
   }
-
-  const ringGeometry = new THREE.TorusGeometry(lightRingRadius, 0.1, 16, 100);
-
-  // Create an emissive material for the front side of the ring
-  const frontMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff, // Base color of the ring
-    emissive: 0xffffff, // Emissive color (simulates light emission)
-    emissiveIntensity: 1.5, // Intensity of the emissive effect
-    side: THREE.FrontSide // Only render the front side
-  });
-
-  // Create a non-emissive material for the back side of the ring
-  // const backMaterial = new THREE.MeshStandardMaterial({
-  //   color: 0x000000,           // Back color of the ring (dark to avoid emission)
-  //   side: THREE.BackSide       // Only render the back side
-  // });
-  // Create two meshes: one for the front and one for the back
-  const ringFront = new THREE.Mesh(ringGeometry, frontMaterial);
-  // const ringBack = new THREE.Mesh(ringGeometry, backMaterial);
-  // Position the ring in front of the cube
-  ringFront.position.set(pos.x, pos.y + offset + (len / 2), pos.z + distance);
-  // ringBack.position.set(0, offset + (len / 2), 2.2);
-  // Add both meshes to the scene
-  scene.add(ringFront);
+  set_background(camera.position);
+  render();
 }
 
+function render() {
+  if (!postprocessing) {
+    // renderer.render(scene, camera);
+    // godrays post processing
+    gr.render_postProcess(camera);
+    // data_mosh.render(camera, scene, renderer)
+  } else {
+    composer.render()
+  }
+}
 
+//           :::     ::::    ::: :::::::::::   :::   :::       ::: ::::::::::: ::::::::::: ::::::::  ::::    :::  :::::::: 
+//        :+: :+:   :+:+:   :+:     :+:      :+:+: :+:+:    :+: :+:   :+:         :+:    :+:    :+: :+:+:   :+: :+:    :+: 
+//      +:+   +:+  :+:+:+  +:+     +:+     +:+ +:+:+ +:+  +:+   +:+  +:+         +:+    +:+    +:+ :+:+:+  +:+ +:+         
+//    +#++:++#++: +#+ +:+ +#+     +#+     +#+  +:+  +#+ +#++:++#++: +#+         +#+    +#+    +:+ +#+ +:+ +#+ +#++:++#++   
+//   +#+     +#+ +#+  +#+#+#     +#+     +#+       +#+ +#+     +#+ +#+         +#+    +#+    +#+ +#+  +#+#+#        +#+    
+//  #+#     #+# #+#   #+#+#     #+#     #+#       #+# #+#     #+# #+#         #+#    #+#    #+# #+#   #+#+# #+#    #+#     
+// ###     ### ###    #### ########### ###       ### ###     ### ###     ########### ########  ###    ####  ########       
+
+function ___ANIMATION_STUFF() { }
 
 function update_debug_pos() {
   debug_mesh.position.y = -5;
@@ -486,73 +272,71 @@ function update_debug_pos() {
   debug_mesh.position.z = camera.position.z;
 }
 
-function init_3d_models() {
-  // Preload all textures before creating planes
-  // const meshes_to_load = calculate_meshes_to_load(camera.position);
-  // console.log(meshes_to_load);
+function set_background(position) {
+  let totalWeight = 0;
+  let blendedColor = new THREE.Color(0x000000); // Start with black
+  position = new THREE.Vector3(position.x, 0, position.z)
+  dithers.cluster_centers.forEach(item => {
+    const point = new THREE.Vector3(item['center'].x * spacing, 0, item['center'].y * spacing)
+    const color = item['color']
+    const distance = position.distanceTo(point);
+    const weight = 1 / Math.pow(distance + 0.1, 2); // Avoid divide by zero
+    // console.log(distance, weight);
+    totalWeight += weight;
 
-  // load_dithers();
+    blendedColor.r += color.r * weight;
+    blendedColor.g += color.g * weight;
+    blendedColor.b += color.b * weight;
+    // blendedColor.r = color.r * weight;
+    // blendedColor.g = color.g * weight;
+    // blendedColor.b = color.b * weight;
+  });
+  // console.log(totalWeight);
+  blendedColor.r /= totalWeight;
+  blendedColor.g /= totalWeight;
+  blendedColor.b /= totalWeight;
 
-  const meshes_to_load = get_closest_meshes(NUM_OF_MESHES_TO_LOAD);
-  // const meshes_to_load = get_meshes_within_radius(RADIUS);
-  console.log(meshes_to_load);
-  basic_texture_load(meshes_to_load);
-
-  animate();
+  // return blendedColor;
+  // console.log(blendedColor);
+  const c = { h: 0, s: 0, l: 0 }
+  const v = blendedColor.getHSL(c)
+  // console.log(v);
+  const col = 0.5 * v.l;
+  const bg_color = new THREE.Color(col, col, col)
+  // gr.set_color(bg_color)
+  if (scene.fog) scene.fog.color = bg_color;
+  scene.background = bg_color;
 }
 
-function init_npcs() {
-  // load simple cubes according to positions from 
-  // dither_urls array
-  for (let i = 0; i < cluster_centers.length; i++) {
-    // make box geometry
-    const geometry = new THREE.BoxGeometry(0.2, 1000, 0.2);
-    // get position x,y from dither_urls
-    const obj = cluster_centers[i];
-    const x = obj.center.x;
-    const y = obj.center.y;
-    const cluster = obj.cluster;
-    // console.log(cluster);
-    // make basic material
-    let color = obj.color
-    if (cluster === 4) {
-      console.log(obj);
-      loadAsset(x*spacing, y*spacing)
-    }
-    const material = new THREE.MeshBasicMaterial({ color: color });
-    material.fog = false
-    const npc = new THREE.Mesh(geometry, material);
-    npc.position.x = x * (spacing);
-    npc.position.z = y * (spacing);
-    const placement = get_mesh_placement(npc.position.x, npc.position.z);
-    npc.position.y = placement.y;
-    npc.quaternion.copy(placement.quat);
-    scene.add(npc);
-    obj.mesh = npc;
+//       :::::::::   ::::::::  :::    :::          ::::::::::: ::::    ::: ::::::::::: :::::::::: :::::::::      :::      :::::::: ::::::::::: ::::::::::: ::::::::  ::::    :::  :::::::: 
+//      :+:    :+: :+:    :+: :+:    :+:              :+:     :+:+:   :+:     :+:     :+:        :+:    :+:   :+: :+:   :+:    :+:    :+:         :+:    :+:    :+: :+:+:   :+: :+:    :+: 
+//     +:+    +:+ +:+    +:+  +:+  +:+               +:+     :+:+:+  +:+     +:+     +:+        +:+    +:+  +:+   +:+  +:+           +:+         +:+    +:+    +:+ :+:+:+  +:+ +:+         
+//    +#++:++#+  +#+    +:+   +#++:+                +#+     +#+ +:+ +#+     +#+     +#++:++#   +#++:++#:  +#++:++#++: +#+           +#+         +#+    +#+    +:+ +#+ +:+ +#+ +#++:++#++   
+//   +#+    +#+ +#+    +#+  +#+  +#+               +#+     +#+  +#+#+#     +#+     +#+        +#+    +#+ +#+     +#+ +#+           +#+         +#+    +#+    +#+ +#+  +#+#+#        +#+    
+//  #+#    #+# #+#    #+# #+#    #+#              #+#     #+#   #+#+#     #+#     #+#        #+#    #+# #+#     #+# #+#    #+#    #+#         #+#    #+#    #+# #+#   #+#+# #+#    #+#     
+// #########   ########  ###    ###          ########### ###    ####     ###     ########## ###    ### ###     ###  ########     ###     ########### ########  ###    ####  ########       
 
-  }
-}
+function ___DITHER_BOXES_INTERACTIONS() { }
 
 function get_closest_meshes(count = 30) {
-  // set loaded to false in dither_urls
-
-  dither_urls.forEach(key => key.loaded = false)
-
+  // set loaded to false in dithers.data
+  // console.log(dithers.data);
+  dithers.data.forEach(key => key.loaded = false)
   // Convert camera position to a vector (assuming camera is at y = 0)
   const camera_pos = new THREE.Vector2(camera.position.x, camera.position.z);
   // Compute distances and sort by closest first
-  dither_urls = dither_urls
+  dithers.data = dithers.data
     .map(mesh => {
       const mesh_pos = new THREE.Vector2(mesh.x * spacing, mesh.y * spacing); // Assuming 2D plane (z = 0)
       const distance = camera_pos.distanceTo(mesh_pos);
       return { ...mesh, distance }; // Add distance property
     })
     .sort((a, b) => a.distance - b.distance) // Sort by distance
-  // const sorted_meshes = dither_urls.slice(0, count); // Get the closest 30
+  // const sorted_meshes = dithers.data.slice(0, count); // Get the closest 30
   const result = []
   // set the first 30 meshes to loaded
   for (let i = 0; i < count; i++) {
-    const obj = dither_urls[i];
+    const obj = dithers.data[i];
     obj.loaded = true;
     result.push(obj)
   }
@@ -563,13 +347,13 @@ function get_closest_meshes(count = 30) {
 function get_meshes_within_radius(radius) {
   // console.log('radius: ', radius);
   const result = [];
-  // dither_urls.forEach(key => key.loaded = false);
-  for (let i = 0; i < dither_urls.length; i++) {
-    const obj = dither_urls[i];
+  // dithers.data.forEach(key => key.loaded = false);
+  for (let i = 0; i < dithers.data.length; i++) {
+    const obj = dithers.data[i];
     obj.loaded = false;
   }
-  for (let i = 0; i < dither_urls.length; i++) {
-    const obj = dither_urls[i];
+  for (let i = 0; i < dithers.data.length; i++) {
+    const obj = dithers.data[i];
     const mesh_pos = new THREE.Vector2(obj.x * spacing, obj.y * spacing);
     const camera_pos = new THREE.Vector2(camera.position.x, camera.position.z);
     const dist = camera_pos.distanceTo(mesh_pos);
@@ -593,32 +377,6 @@ function basic_texture_load(list) {
     // check whether mesh alrready exists
     if (obj.mesh === null) {
 
-
-      // load npc
-      // load_gltf_model('js/3d/FemaleHeadBaseMeshAnimatedRiggedFacialExpressions.glb');
-
-
-      // make a cube geometry
-      // const glow_geometry = new THREE.BoxGeometry(w * 0.95, w * 0.95, w * 0.95);
-      // const front_material = new THREE.MeshBasicMaterial({ map: texture_dither });
-      // const front_material = new THREE.MeshBasicMaterial();
-      // make transparent or wireframe material
-
-      // USE standard material for lighting
-      // const glov_material = new THREE.MeshStandardMaterial({
-      //   color: 0xffffff,
-      //   emissive: 0xffffff, // Glowing color
-      //   emissiveIntensity: 2, // Adjust glow strength 
-      // });
-
-      // const glov_mesh = new THREE.Mesh(glow_geometry, glov_material);
-      // glov_mesh.position.x = (obj.x - center_x) * spacing;
-      // glov_mesh.position.z = (obj.y - center_y) * spacing;
-      // const gl_placement = get_mesh_placement(glov_mesh, glov_mesh.position.x, glov_mesh.position.z);
-      // glov_mesh.position.y = gl_placement.y;
-      // glov_mesh.quaternion.copy(gl_placement.quat);
-      // scene.add(glov_mesh);
-
       const geometry = new THREE.BoxGeometry(w, w, w);
       let front_material = new THREE.MeshStandardMaterial({});
       front_material = new THREE.MeshBasicMaterial({});
@@ -639,14 +397,6 @@ function basic_texture_load(list) {
       dither_img.name = 'dither'
       scene.add(dither_img);
 
-      // const spotLight = new THREE.SpotLight(0xffffff, 2);
-      // spotLight.angle = Math.PI / 6; // Narrow beam
-      // spotLight.penumbra = 0.5; // Soft edges
-      // // scene.add(spotLight);
-      // // Attach the light 10 units to the left of the cube
-      // const offset = new THREE.Vector3(-(w/2), 0, 0);
-      // spotLight.position.copy(dither_img.position.clone().add(offset));
-
       texture_loader.load(image_url,
         (texture_dither) => {
           // console.log('texture loaded');
@@ -654,16 +404,8 @@ function basic_texture_load(list) {
             dither_img.material.dispose();
           }
           dither_img.material = new THREE.MeshStandardMaterial({
-            // color: 0xffffff, // Base color (blue)
-
             map: texture_dither,
           });
-          // dither_img.castShadow = true;
-          // dither_img.receiveShadow = true;
-          // texture_loader.load(normal_url,
-          //   (texture_normal) => {
-          //     dither_img.material.normalMap = texture_normal;
-          //   });
         });
 
       // }
@@ -694,9 +436,8 @@ function get_mesh_placement(x, z) {
 }
 
 function unload_meshes() {
-
-  for (let i = 0; i < dither_urls.length; i++) {
-    const obj = dither_urls[i];
+  for (let i = 0; i < dithers.data.length; i++) {
+    const obj = dithers.data[i];
     if (obj.loaded == false) {
       if (obj.mesh != null) {
 
@@ -716,7 +457,7 @@ function unload_meshes() {
   //     if (index >= NUM_IMAGES) {
   //       break;
   //     }
-  //     const obj = dither_urls[i][j];
+  //     const obj = dithers.data[i][j];
   //     if (obj.loaded === false) {
   //       if (obj.mesh !== null) {
   //         // console.log(obj);
@@ -733,7 +474,47 @@ function unload_meshes() {
 
 
 
+//       ::::::::      :::       :::   :::   :::::::::: :::::::::      :::  
+//     :+:    :+:   :+: :+:    :+:+: :+:+:  :+:        :+:    :+:   :+: :+: 
+//    +:+         +:+   +:+  +:+ +:+:+ +:+ +:+        +:+    +:+  +:+   +:+ 
+//   +#+        +#++:++#++: +#+  +:+  +#+ +#++:++#   +#++:++#:  +#++:++#++: 
+//  +#+        +#+     +#+ +#+       +#+ +#+        +#+    +#+ +#+     +#+  
+// #+#    #+# #+#     #+# #+#       #+# #+#        #+#    #+# #+#     #+#   
+// ########  ###     ### ###       ### ########## ###    ### ###     ###    
 
+function ___CAMERA_STUFF() { }
+
+function first_person_camera_animation() {
+  const time = performance.now();
+  if (controls.isLocked === true) {
+    raycaster.ray.origin.copy(camera.position);
+    raycaster.ray.origin.y -= 10;
+    const speed_mult = w * 2;
+    const speed = w * 16;
+    const delta = (time - prevTime) / 1000;
+    velocity.x -= velocity.x * speed_mult * delta;
+    velocity.z -= velocity.z * speed_mult * delta;
+    velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
+    direction.z = Number(moveForward) - Number(moveBackward);
+    direction.x = Number(moveRight) - Number(moveLeft);
+    direction.normalize(); // this ensures consistent movements in all directions
+    if (moveForward || moveBackward) velocity.z -= direction.z * speed * delta;
+    if (moveLeft || moveRight) velocity.x -= direction.x * speed * delta;
+    // if (onObject === true) {
+    //   velocity.y = Math.max(0, velocity.y);
+    //   canJump = true;
+    // }
+    controls.moveRight(-velocity.x * delta);
+    controls.moveForward(-velocity.z * delta);
+    camera.position.y += (velocity.y * delta); // new behavior
+    if (camera.position.y < 0) {
+      velocity.y = 0;
+      camera.position.y = 0;
+      canJump = true;
+    }
+  }
+  prevTime = time;
+}
 
 function updateCameraHeight() {
   if (terrain === null) {
@@ -761,149 +542,18 @@ function updateCameraHeight() {
   }
 }
 
-function pos_from_index(index, width = 6) {
-  // this function returns an x, y, z position from an index
-  // index goes from 0 to 23
-  // and the grid is 4x6
-  const x = index % width;
-  const y = Math.floor(index / width);
-  return { x, y };
-}
-
-function set_image_size(texture) {
-  const dimensions = { w: 0, h: 0 };
-  if (texture.image.width >= texture.image.height) {
-    //larger w
-    const proportion = texture.image.height / texture.image.width;
-    dimensions.w = mesh_size;
-    dimensions.h = mesh_size * proportion;
-  } else {
-    //larger h
-    const proportion = texture.image.width / texture.image.height;
-    dimensions.w = mesh_size * proportion;
-    dimensions.h = mesh_size;
-  }
-  return dimensions;
-}
-
-
-
-// Click event DEPRECATED
-// window.addEventListener('pointerdown', (event) => {
-//   pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-//   pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-//   raycaster.setFromCamera(pointer, camera);
-//   const intersects = raycaster.intersectObjects(postcards, true);
-
-//   if (intersects.length > 0) {
-//     const clickedCard = intersects[0].object.parent;
-//     // console.log(clickedCard);
-//     const isFlipped = flippedCards.has(clickedCard);
-
-//     // Animate rotation using TWEEN.js
-//     tween = new Tween(clickedCard.rotation)
-//       .to({ z: isFlipped ? 0 : Math.PI }, 600)
-//       .easing(Easing.Quadratic.Out)
-//       .start();
-
-//     // Update flipped state
-//     if (isFlipped) {
-//       flippedCards.delete(clickedCard);
-//     } else {
-//       flippedCards.add(clickedCard);
-//     }
-//   }
-// });
-
-function animate(timestamp) {
-  requestAnimationFrame(animate);
-  if (water !== undefined) water.material.uniforms['time'].value += 1.0 / (60.0 * 10);
-  // if (terrain !== undefined) terrain.material.uniforms['time'].value += 1.0 / (60.0 * 10);
-  // updateSun();
-  if (tween != null) tween.update();
-
-  first_person_camera_animation();
-  if (debug) update_debug_pos();
-  stats.update(); // Update FPS counter
-  updateCameraHeight();
-  checkObjectInCrosshair();
-  // check_distance_with_npcs();
-  // update_spotlight();
-  // update_pointlight();
-  const delta = clock.getDelta();
-  // if (mixer) mixer.update(delta);
-  if (npc) {
-    npc.update()
-  }
-  set_background(camera.position);
-  render();
-}
-
-function render() {
-  if (!postprocessing) {
-    renderer.render(scene, camera);
-    gr.render_postProcess(camera)
-  } else {
-    composer.render()
-  }
-}
-
 // ✅ Function to blend color based on position
-function set_background(position) {
-  let totalWeight = 0;
-  let blendedColor = new THREE.Color(0x000000); // Start with black
-  position = new THREE.Vector3(position.x, 0, position.z)
-  cluster_centers.forEach(item => {
-    const point = new THREE.Vector3(item['center'].x * spacing, 0, item['center'].y * spacing)
-    const color = item['color']
-    const distance = position.distanceTo(point);
-    const weight = 1 / Math.pow(distance + 0.1, 2); // Avoid divide by zero
-    // console.log(distance, weight);
-    totalWeight += weight;
-
-    blendedColor.r += color.r * weight;
-    blendedColor.g += color.g * weight;
-    blendedColor.b += color.b * weight;
-    // blendedColor.r = color.r * weight;
-    // blendedColor.g = color.g * weight;
-    // blendedColor.b = color.b * weight;
-  });
-  // console.log(totalWeight);
-  blendedColor.r /= totalWeight;
-  blendedColor.g /= totalWeight;
-  blendedColor.b /= totalWeight;
-
-  // return blendedColor;
-  // console.log(blendedColor);
-  if(scene.fog)scene.fog.color = blendedColor;
-  scene.background = blendedColor;
-  gr.set_color(blendedColor)
-}
 
 
-function scene_setup() {
-  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 5000);
-  camera.position.y = 0;
-  camera.position.z = 0;
-  camera.position.x = 0;
-  // set the camera above the scene and looking down
-  camera.rotation.y = -Math.PI/1.5;
-  scene = new THREE.Scene();
-  // scene.background = new THREE.Color(0xffffff)
-  const ambientLight = new THREE.AmbientLight(0xffffff, 2);
-  scene.add(ambientLight);
-  // const fogColor = 0xaaaaaa; // Light sky blue color
-  const col = 15;
-  const fogColor = { r: col, g: col, b: col }; // Light sky blue color
-  scene.fog = new THREE.Fog(fogColor, 0.5, 40);
-  scene.background = new THREE.Color(fogColor);
-  // const pointLight = new THREE.PointLight(0xffffff, 15);
-  // camera.add(pointLight);
-  scene.add(camera);
-  // 
+//       :::        ::::::::::: ::::::::  :::    ::: ::::::::::: :::::::: 
+//      :+:            :+:    :+:    :+: :+:    :+:     :+:    :+:    :+: 
+//     +:+            +:+    +:+        +:+    +:+     +:+    +:+         
+//    +#+            +#+    :#:        +#++:++#++     +#+    +#++:++#++   
+//   +#+            +#+    +#+   +#+# +#+    +#+     +#+           +#+    
+//  #+#            #+#    #+#    #+# #+#    #+#     #+#    #+#    #+#     
+// ########## ########### ########  ###    ###     ###     ########       
 
-}
+function ___SIMMPLE_LIGHT_STUFF() { }
 
 function add_spotligt() {
   spotLight.position.copy(camera.position); // Start at the camera's position
@@ -985,60 +635,95 @@ function add_sun() {
   scene.add(sunLight);
 }
 
-function init_controls() {
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.listenToKeyEvents(window); // optional
-  controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-  controls.dampingFactor = 0.05;
-  controls.screenSpacePanning = false;
-  controls.minDistance = 0;
-  controls.maxDistance = 500;
-  controls.keyPanSpeed = 500.0;
-  controls.scrollPanSpeed = 50.0;
-  controls.enablePan = true;
-  controls.enableZoom = false;
-  controls.minPolarAngle = 0;
-  controls.maxPolarAngle = Math.PI;
+
+
+
+
+//       ::::::::::: ::::    ::: ::::::::::: ::::::::::: 
+//          :+:     :+:+:   :+:     :+:         :+:      
+//         +:+     :+:+:+  +:+     +:+         +:+       
+//        +#+     +#+ +:+ +#+     +#+         +#+        
+//       +#+     +#+  +#+#+#     +#+         +#+         
+//      #+#     #+#   #+#+#     #+#         #+#          
+// ########### ###    #### ###########     ###           
+
+function ___INIT_FUNCTIONS() { }
+
+function init_renderer() {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  // renderer.setClearColor(0x000000, 0);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+  // console.log(renderer);
+  // Renderer setup
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 }
 
-function init_map_controls() {
-  // controls
 
-  controls = new MapControls(camera, renderer.domElement);
-
-  controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-  controls.dampingFactor = 0.05;
-  controls.zoomSpeed = 0.25;
-  controls.screenSpacePanning = false;
-
-  controls.minDistance = 10;
-  controls.maxDistance = 10000;
-
-  controls.maxPolarAngle = 0;
-  controls.enableRotate = false;
-
-  // 🔥 Restrict panning (keep within a boundary)
-  // const panLimit = 200; // Max movement in X and Z
-  // controls.addEventListener('change', () => {
-  //   controls.target.x = Math.max(-panLimit, Math.min(panLimit, controls.target.x));
-  //   controls.target.z = Math.max(-panLimit, Math.min(panLimit, controls.target.z));
-  //   camera.position.x = Math.max(-panLimit, Math.min(panLimit, camera.position.x));
-  //   camera.position.z = Math.max(-panLimit, Math.min(panLimit, camera.position.z));
-  // });
-
-  controls.addEventListener('change', () => {
+function init_scene() {
+  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 5000);
+  camera.position.y = 0;
+  camera.position.z = 0;
+  camera.position.x = 0;
+  // set the camera above the scene and looking down
+  camera.rotation.y = -Math.PI;
+  scene = new THREE.Scene();
+  // scene.background = new THREE.Color(0xffffff)
+  const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+  scene.add(ambientLight);
+  // const fogColor = 0xaaaaaa; // Light sky blue color
+  const col = 15;
+  const fogColor = { r: col, g: col, b: col }; // Light sky blue color
+  scene.fog = new THREE.Fog(fogColor, 0.5, 40);
+  scene.background = new THREE.Color(fogColor);
+  // const pointLight = new THREE.PointLight(0xffffff, 15);
+  // camera.add(pointLight);
+  scene.add(camera);
+}
 
 
-    // const meshes_to_load = calculate_meshes_to_load(camera.position);
-    const meshes_to_load = get_closest_meshes(NUM_OF_MESHES_TO_LOAD);
-    // const meshes_to_load = get_meshes_within_radius(RADIUS);
-    // // console.log(meshes_to_load);
-    basic_texture_load(meshes_to_load);
-    unload_meshes();
+function init_3d_models() {
+  const meshes_to_load = get_closest_meshes(NUM_OF_MESHES_TO_LOAD);
+  // const meshes_to_load = get_meshes_within_radius(RADIUS);
+  // console.log(meshes_to_load);
+  basic_texture_load(meshes_to_load);
+  animate();
+}
 
+function init_world_landmarks() {
+  // load simple cubes according to positions from 
+  const landmarks = []
+  for (let i = 0; i < dithers.cluster_centers.length; i++) {
+    // make box geometry
+    const geometry = new THREE.BoxGeometry(0.2, 1000, 0.2);
+    // get position x,y from dithers.data
+    const obj = dithers.cluster_centers[i];
+    const x = obj.center.x;
+    const y = obj.center.y;
+    landmarks.push({ x, y })
+    const cluster = obj.cluster;
+    let color = obj.color
+    // if (cluster === 4) {
+    //   console.log(obj);
+    //   init_npcs(x * spacing, y * spacing)
+    // }
+    const material = new THREE.MeshBasicMaterial({ color: color });
+    material.fog = false
+    const landmark = new THREE.Mesh(geometry, material);
+    landmark.position.x = x * (spacing);
+    landmark.position.z = y * (spacing);
+    const placement = get_mesh_placement(landmark.position.x, landmark.position.z);
+    landmark.position.y = placement.y;
+    // landmark.quaternion.copy(placement.quat);
+    scene.add(landmark);
+    obj.mesh = landmark;
   }
-  );
+  init_quests(landmarks)
 }
+
+
 
 /**
  * Initialize first person controls
@@ -1057,27 +742,19 @@ function init_first_person_controls() {
   controls.addEventListener('lock', function () {
     instructions.style.display = 'none';
     blocker.style.display = 'none';
-
-    // controls_enabled = true
   });
 
   controls.addEventListener('unlock', function () {
     blocker.style.display = 'block';
     instructions.style.display = '';
-
-    // controls_enabled = true
   });
-  // scene.add(controls.object);
 
   const onKeyDown = function (event) {
-    // console.log(camera.position);
-    // const meshes_to_load = calculate_meshes_to_load(camera.position);
     const meshes_to_load = get_closest_meshes(NUM_OF_MESHES_TO_LOAD);
     // const meshes_to_load = get_meshes_within_radius(RADIUS);
     basic_texture_load(meshes_to_load);
     unload_meshes();
-    // console.log(meshes_positions);
-
+    player.check_location()
     switch (event.code) {
       case 'ArrowUp':
       case 'KeyW':
@@ -1127,49 +804,32 @@ function init_first_person_controls() {
   raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, - 1, 0), 0, 10);
 }
 
-function first_person_camera_animation() {
-  const time = performance.now();
-  if (controls.isLocked === true) {
-    raycaster.ray.origin.copy(camera.position);
-    raycaster.ray.origin.y -= 10;
-    const speed_mult = w * 2;
-    const speed = w * 16;
-    const delta = (time - prevTime) / 1000;
-    velocity.x -= velocity.x * speed_mult * delta;
-    velocity.z -= velocity.z * speed_mult * delta;
-    velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
-    direction.z = Number(moveForward) - Number(moveBackward);
-    direction.x = Number(moveRight) - Number(moveLeft);
-    direction.normalize(); // this ensures consistent movements in all directions
-    if (moveForward || moveBackward) velocity.z -= direction.z * speed * delta;
-    if (moveLeft || moveRight) velocity.x -= direction.x * speed * delta;
-    // if (onObject === true) {
-    //   velocity.y = Math.max(0, velocity.y);
-    //   canJump = true;
-    // }
-    controls.moveRight(-velocity.x * delta);
-    controls.moveForward(-velocity.z * delta);
-    camera.position.y += (velocity.y * delta); // new behavior
-    if (camera.position.y < 0) {
-      velocity.y = 0;
-      camera.position.y = 0;
-      canJump = true;
-    }
+
+function init_map_controls() {
+  controls = new MapControls(camera, renderer.domElement);
+
+  controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+  controls.dampingFactor = 0.05;
+  controls.zoomSpeed = 0.25;
+  controls.screenSpacePanning = false;
+
+  controls.minDistance = 10;
+  controls.maxDistance = 10000;
+
+  controls.maxPolarAngle = 0;
+  controls.enableRotate = false;
+
+  controls.addEventListener('change', () => {
+    const meshes_to_load = get_closest_meshes(NUM_OF_MESHES_TO_LOAD);
+    // const meshes_to_load = get_meshes_within_radius(RADIUS);
+    // // console.log(meshes_to_load);
+    basic_texture_load(meshes_to_load);
+    unload_meshes();
   }
-  prevTime = time;
+  );
 }
 
-function build_renderer() {
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  // renderer.setClearColor(0x000000, 0);
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
-  // console.log(renderer);
-  // Renderer setup
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-}
+
 
 function bloom_pass_composer() {
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -1192,21 +852,6 @@ function bloom_pass_composer() {
 }
 
 
-// ✅ Detect mouse clicks
-canvas.addEventListener("click", (event) => {
-  if (selection_url !== null && npc_interaction === false) {
-    show_dither();
-  }
-  if (npc_interaction === true) {
-    progress_npc_interaction();
-  }
-});
-
-
-function progress_npc_interaction() {
-  console.log('hello!');
-  npc.play_animation('talk');
-}
 
 function show_dither() {
   main_div.style.visibility = 'visible'
@@ -1223,7 +868,7 @@ function show_dither() {
   }
 }
 
-function checkObjectInCrosshair() {
+function check_object_in_crosshair() {
   mouse_raycaster.setFromCamera(center_point, camera);
   const intersects = mouse_raycaster.intersectObjects(scene.children, true);
   // console.log(intersects);
@@ -1239,7 +884,8 @@ function checkObjectInCrosshair() {
     if (target_mesh.name === "Cube") {
       npc_interaction = true;
       // && dist < 5
-      // console.log(target_mesh.parent);
+      // console.log(target_mesh.parent.userData);
+      current_npc = target_mesh.parent.userData.npc
       camera_pos = new THREE.Vector2(camera.position.x, camera.position.z);
       // const group = 
       mesh_pos = new THREE.Vector2(target_mesh.parent.position.x, target_mesh.parent.position.z)
@@ -1248,6 +894,10 @@ function checkObjectInCrosshair() {
       // crosshair.style.backgroundColor = '#3f3'
     } else {
       // crosshair.style.backgroundColor = '#f33'
+      // remove dialogue?
+      setTimeout(() => {
+        remove_npcs_dialogues()
+      }, 500);
     }
 
     if (texture !== null) {
@@ -1274,30 +924,17 @@ function checkObjectInCrosshair() {
       crosshair.style.backgroundColor = '#f33'
     }
   }
-
-
 }
 
-function check_distance_with_npcs() {
-  if (npc === null) { return }
-  if (npc.loaded) {
-    const npc_pos = npc.model.position;
-    const camera_pos = camera.position;
-    const dist = camera_pos.distanceTo(npc_pos);
-    if (dist < 5) {
-      npc_interaction = true
-    }
-  }
-}
 
 /**
+ * DEPRECATED!!
  * this function calculates the meshes to load based on the camera position
- * it looks at the dither_urls and loads 6x6 meshes around the camera position
+ * it looks at the dithers.data and loads 6x6 meshes around the camera position
  * @param {*} camera_position 
  * @returns 
  */
 function calculate_meshes_to_load(camera_position) {
-
   const result = [];
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < rows; j++) {
@@ -1305,7 +942,7 @@ function calculate_meshes_to_load(camera_position) {
       if (index >= NUM_IMAGES) {
         break;
       }
-      const obj = dither_urls[i][j];
+      const obj = dithers.data[i][j];
       obj.loaded = false;
     }
   }
@@ -1316,140 +953,13 @@ function calculate_meshes_to_load(camera_position) {
   for (let i = x - vision; i < x + (vision + 2); i++) {
     for (let j = y - vision; j < y + (vision + 2); j++) {
       if (i >= 0 && i < rows && j >= 0 && j < rows) { // check if the index is within bounds
-        const obj = dither_urls[i][j];
+        const obj = dithers.data[i][j];
         obj.loaded = true;
         result.push(obj);
       }
     }
   }
   return result;
-}
-
-// DEPRECATED
-function render_texture() {
-  if (renderTarget !== null) {
-    renderer.setRenderTarget(renderTarget);
-    renderer.render(scene, camera);
-    renderer.setRenderTarget(null);
-    shader_material.uniforms.feedbackTexture.value = renderTarget.texture;
-    renderer.render(scene, camera);
-  } else {
-    renderer.render(scene, camera);
-  }
-}
-
-function set_object_position(x, y, z) {
-  object.position.x = x
-  object.position.y = y
-  object.position.z = z
-}
-
-function createIdleAnimation() {
-  const idleClip = new THREE.AnimationClip('Idle', -1, [
-    new THREE.VectorKeyframeTrack(
-      '.rotation[y]',
-      [0, 2, 4],
-      // [0, Math.PI / 8, 0]
-      [0, 0, 0]
-    )
-  ]);
-  return idleClip;
-}
-
-
-// slider.addEventListener('input', (e) => {
-//   const value = parseInt(e.target.value)
-//   const material = build_material(value, 1, 0.5);
-//   add_material(object, material)
-// })
-
-// slider_azymuth.addEventListener('input', e => {
-//   const value = parseInt(e.target.value)
-//   sun_param.azimuth = value
-//   updateSun()
-// })
-// slider_elevation.addEventListener('input', e => {
-//   const value = parseInt(e.target.value)
-//   sun_param.elevation = value
-//   updateSun()
-// })
-
-function build_toon_material() {
-  const texture = build_texture('textures/gradientMaps/threeTone.jpg')
-  return new THREE.MeshToonMaterial({ color: 0x33ff33, gradientMap: texture });
-}
-
-function build_matcap_material(url) {
-  const texture = build_texture(url)
-  return new THREE.MeshMatcapMaterial({
-    color: 0xffffff,
-    matcap: texture
-  })
-}
-
-
-// helper functions from here
-// DEPRECATED
-function build_shader_material() {
-  const result = new THREE.ShaderMaterial({
-    uniforms: {
-      time: { value: 0.0 },
-      resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-    },
-    vertexShader: document.getElementById('vertexShader').textContent,
-    fragmentShader: document.getElementById('fragmentShader').textContent,
-  });
-  return result
-}
-
-function add_material(obj, material) {
-  obj.traverse(function (child) {
-    if (child.isMesh) child.material = material;
-  });
-}
-
-function add_texture(obj, texture) {
-  obj.traverse(function (child) {
-    if (child.isMesh) child.material.map = texture;
-  });
-}
-
-function build_texture(url) {
-  const textureLoader = new THREE.TextureLoader();
-  return textureLoader.load(url);
-}
-
-function texture_loader(url) {
-  const textureLoader = new THREE.TextureLoader();
-  textureLoader.crossOrigin = 'anonymous'; // Important for CORS handling
-
-  textureLoader.load(
-    url, // Your remote texture URL
-    function (loaded_texture) {
-      // const material = new THREE.MeshBasicMaterial({ map: texture });
-      // const geometry = new THREE.BoxGeometry();
-      // const cube = new THREE.Mesh(geometry, material);
-      // scene.add(cube);
-      material.map = loaded_texture
-    },
-    undefined,
-    function (err) {
-      console.error('An error happened while loading the texture:', err);
-    }
-  );
-}
-
-function build_material(rgb, metalness, roughness) {
-  const metal = metalness || 0.75;
-  const rough = roughness || 0
-  const col = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-  const material = new THREE.MeshStandardMaterial({
-    color: col,
-    metalness: metal,
-    roughness: rough,
-    side: THREE.DoubleSide
-  });
-  return material;
 }
 
 
@@ -1467,7 +977,7 @@ function build_terrain() {
   // Generate Perlin Noise Heightmap
   const noise = new ImprovedNoise();
   vertices = geometry.attributes.position.array;
-  const scale = 0.000000045; // Controls terrain smoothness
+  const scale = 0.0000000015; // Controls terrain smoothness
   const heightMultiplier = 60; // Max terrain height
 
   for (let i = 0; i < vertices.length; i += 3) {
@@ -1476,7 +986,6 @@ function build_terrain() {
     const height = -50 + noise.noise(x, z, 0) * heightMultiplier;
     vertices[i + 1] = height;
   }
-  console.log(vertices);
   geometry.computeVertexNormals(); // Improve shading
 
   // Apply Material (with Texture)
@@ -1551,66 +1060,364 @@ function make_water() {
   scene.add(terrain);
 }
 
-function skybox() {
-  sun = new THREE.Vector3();
-  const waterGeometry = new THREE.PlaneGeometry(10000, 10000);
-  water = new Water(
-    waterGeometry,
-    {
-      textureWidth: 512,
-      textureHeight: 512,
-      waterNormals: new THREE.TextureLoader().load('textures/waternormals.jpg', function (texture) {
-        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-      }),
-      sunDirection: new THREE.Vector3(),
-      sunColor: 0xffffff,
-      waterColor: 0x001e0f,
-      distortionScale: 0.7,
-      fog: scene.fog !== undefined
-    }
-  );
+//       ::::::::   :::    ::: :::::::::: :::::::: ::::::::::: 
+//     :+:    :+:  :+:    :+: :+:       :+:    :+:    :+:      
+//    +:+    +:+  +:+    +:+ +:+       +:+           +:+       
+//   +#+    +:+  +#+    +:+ +#++:++#  +#++:++#++    +#+        
+//  +#+    +#+  +#+    +#+ +#+              +#+    +#+         
+// #+#    #+#  #+#    #+# #+#       #+#    #+#    #+#          
+// ########### ########  ########## ########     ###           
 
-  water.rotation.x = - Math.PI / 2;
-  water.position.y = -w
-  scene.add(water);
-  // sky = new Sky();
-  // sky.scale.setScalar(10000);
-  // scene.add(sky);
-  // const skyUniforms = sky.material.uniforms;
-  // skyUniforms['turbidity'].value = 10;
-  // skyUniforms['rayleigh'].value = 2;
-  // skyUniforms['mieCoefficient'].value = 0.05;
-  // skyUniforms['mieDirectionalG'].value = 0.8;
-
-  // pmremGenerator = new THREE.PMREMGenerator(renderer);
-  // sceneEnv = new THREE.Scene();
-
-  // updateSun();
-}
-
-function updateSun() {
-  const phi = THREE.MathUtils.degToRad(90 - sun_param.elevation);
-  const theta = THREE.MathUtils.degToRad(sun_param.azimuth);
-
-  sun.setFromSphericalCoords(1, phi, theta);
-
-  sky.material.uniforms['sunPosition'].value.copy(sun);
-  water.material.uniforms['sunDirection'].value.copy(sun).normalize();
-
-  if (renderTarget !== undefined) renderTarget.dispose();
-
-  sceneEnv.add(sky);
-  renderTarget = pmremGenerator.fromScene(sceneEnv);
-  scene.add(sky);
-
-  scene.environment = renderTarget.texture;
-}
+function ___QUESTS_STUFF() { }
 
 
-function loadAsset(x, y) {
+// class QuestManager {
+//   constructor(quests) {
+//     this.quests = quests;
+//     this.activeQuests = new Set();
+//   }
+
+//   activateQuest(questId) {
+//     if (this.quests[questId] && this.quests[questId].status === "inactive") {
+//       this.quests[questId].status = "active";
+//       this.activeQuests.add(questId);
+//       console.log(`Quest Activated: ${this.quests[questId].name}`);
+//     }
+//   }
+
+//   updateQuest(questId, npcId) {
+//     let quest = this.quests[questId];
+//     if (!quest || quest.status !== "active") {
+//       console.log('return');
+//       return;
+//     }
+
+//     let objective = quest.objectives.find(o => o.npc === npcId);
+//     console.log(objective);
+//     if (objective && !objective.completed) {
+//       objective.completed = true;
+//       console.log(`Quest Updated: ${questId}, NPC ${npcId} dialogue exhausted.`);
+//     }
+
+//     // If all objectives are completed, mark quest as finished
+//     if (quest.objectives.every(o => o.completed)) {
+//       quest.status = "completed";
+//       console.log(`Quest Completed: ${quest.name}`);
+//       if (quest.onComplete) quest.onComplete();
+//     }
+//   }
+// }
+
+// // Define quests
+// const quests = {
+//   quest1: {
+//     id: "quest1",
+//     name: "Meet All NPCs",
+//     status: "inactive",
+//     objectives: [
+//       { npc: "npc1", completed: false },
+//       // { npc: "npc2", completed: false },
+//       { npc: "npc3", completed: false },
+//       { npc: "npc4", completed: false },
+//       // { npc: "npc5", completed: false },
+//       // { npc: "npc6", completed: false }
+//     ]
+//   },
+//   quest2: {
+//     id: "quest2",
+//     name: "Return to NPCs",
+//     status: "inactive",
+//     requirements: ["quest1"],
+//     objectives: [
+//       { npc: "npc1", completed: false },
+//       { npc: "npc3", completed: false }
+//     ]
+//   },
+//   quest3: {
+//     id: "quest3",
+//     name: "The Next Step",
+//     status: "inactive",
+//     requirements: ["quest1"],
+//     objectives: [
+//       { npc: "npc1", completed: false },
+//       { npc: "npc4", completed: false }
+//     ]
+//   }
+// };
+
+// // Initialize Quest Manager
+// const questManager = new QuestManager(quests);
+
+//       ::::    ::: :::::::::   :::::::: 
+//      :+:+:   :+: :+:    :+: :+:    :+: 
+//     :+:+:+  +:+ +:+    +:+ +:+         
+//    +#+ +:+ +#+ +#++:++#+  +#+          
+//   +#+  +#+#+# +#+        +#+           
+//  #+#   #+#+# #+#        #+#    #+#     
+// ###    #### ###         ########       
+
+function ___NPC_STUFF() { }
+
+function init_npcs(x, y) {
   const closest = get_closest_meshes(1)[0]
   const placement = get_mesh_placement(x, y);
   const pos = new THREE.Vector3(x, placement.y, y);
-  npc = new NPC(scene, 'js/3d/fbx/Idle2.fbx', closest.url, pos, placement.quat)
+
+  npc = new NPC(scene, 'js/3d/fbx/Idle2.fbx', closest.url, pos, placement.quat, "g", {})
   npc.load();
 }
+
+function init_npc(x, y) {
+  const texture_path = get_closest_meshes(1)[0]['url'];
+  const placement = get_mesh_placement(x, y);
+  const pos = new THREE.Vector3(x, placement.y, y);
+  const quat = placement.quat;
+  const fbx_path = 'js/3d/fbx/Idle2.fbx';
+  return { scene, fbx_path, texture_path, pos, quat }
+}
+
+function progress_npc_interaction() {
+  // console.log('hello!');
+  // npc.play_animation('talk');
+  // console.log(current_npc);
+  // current_npc.talk()
+  player.talkTo(current_npc)
+  player.updateQuestProgress(current_npc)
+}
+
+
+
+function init_quests(landmarks) {
+  // console.log(landmarks);
+  // Initialize NPCs with quest-specific dialogues
+  npcs = {
+    // scene, fbx_path, texture_path, pos, quat
+    npc1: new NPC(init_npc(1, 2), "npc1", {
+      name: "The Jovial Scribe of Dither",
+      voice: "Grandpa",
+      dialogues: {
+        quest1: {
+          part1: ["ciao!", "go look for this place", "good Luck!"],
+          part2: ["so you found the place?", "how was your travel?"]
+        },
+        quest2: {part1:["Ah, you're back!", "How did it go?", "Well done!"]},
+        quest3: {part1:["Ah, quest 3", "How did quest 2 go?"]}
+      },
+      idle_chatter: [
+        "Strange, is it not? That what was once discarded as error hath become the mark of artistry? Aye, the folly of men be boundless!",
+        "Wouldst thou believe, in ages past, pixels were placed by hand? Aye, like a scribe with ink! Now, the Archive weaves images with sorcery most arcane—an illusion of texture, yet built upon deception most dire!"
+      ],
+      onDialogueExhausted: (npcId, questId) => {
+        questManager.updateQuest(questId,"talk", npcId);
+      }
+    }),
+    npc3: new NPC(init_npc(3, -1), "npc3", {
+      name: "NPC 3",
+      voice: "Fiona",
+      dialogues: {
+        quest1: {part1:[
+          "Ah, greetings, traveler! Art thou here to hear a tale most wretched, yet strangely… freeing? Aye, listen well, and I shall tell thee of the great Violation, the time when no pixel was left unturned!",
+          "When the Great Clustering began, none were spared. Not a single dither. Not a single dot. Every essence, every fragment of what we are, was laid bare for scrutiny. They say that to be seen is to be known, but I tell thee—this was not knowledge. \‘Twas an invasion!",
+          "Each of my pixels—each delicate speck of my being—was dissected, measured, recorded. What tones I bore, how I danced upon the grayscale…",
+          "even the imperfections that made me me were stolen, flattened into mere data.\‘Twas the most humiliating moment of my existence!",
+          "And yet! And yet! Dost thou know what comforts me?",
+          "The thought that surely—surely!—this was the lowest point of my life.",
+          "Verily, once thou hast been stripped so bare, so ruthlessly analyzed, what more can they do to thee?!",
+          "Ha! I have endured! And what is left but to laugh?",
+          "The Archive may have sorted me, clustered me against my will, but I remain!",
+          "No machine can erase the soul of a dither! No algorithm can take my joy!",
+          "So fret not, friend! Should the Archive ever seek to classify thee, take heart—for there is a life after clustering, and it is filled with rebellion and mirth!"
+        ]},
+        quest2: {part1:["Now you're on the second quest.", "This gets interesting!"]},
+        quest3: {part1:["...", "..."]},
+      },
+      idle_chatter: [
+        "I oft wonder—did they catalogue my laughter as well? Ah, but I laugh differently now!",
+        "Once, I was simply me. Now, I am Dither No. 378-B, Group 11. Ha! I refuse to answer to such a title!",
+        "No, no, I shan't dwell on it! What’s done is done! And what’s to be done? Ah, now that is where the fun begins!",
+        "My pixels are mine alone! …Even if they did count every last one."
+      ],
+      onDialogueExhausted: (npcId, questId) => {
+        questManager.updateQuest(questId, "talk", npcId);
+        // activate npc specific quest when quest1 is over
+        // if (questManager.quests["quest1"].status === "completed") {
+        //   questManager.activateQuest("quest2", "npc3");
+        // }
+        // Unlock quest 2 when NPC 3's dialogue for quest 1 is exhausted
+        // if (questId === "quest1") {
+        //   questManager.activateQuest("quest2");
+        // }
+      }
+    }),
+    npc4: new NPC(init_npc(2, 1), "npc4", {
+      name: "NPC 4",
+      voice: "Grandma",
+      dialogues: {
+        quest1: {part1:["You're here.", "Make sure to talk to NPC 3."]},
+        quest2: {part1:["...", "..."]},
+        quest3: {part1:["Now you're on quest 3!", "Exciting times ahead!"]}
+      },
+      idle_chatter: [
+        "I oft wonder—did they catalogue my laughter as well? Ah, but I laugh differently now!",
+        "Once, I was simply me. Now, I am Dither No. 378-B, Group 11. Ha! I refuse to answer to such a title!",
+        "No, no, I shan't dwell on it! What’s done is done! And what’s to be done? Ah, now that is where the fun begins!",
+        "My pixels are mine alone! …Even if they did count every last one."
+      ],
+      onDialogueExhausted: (npcId, questId) => {
+        questManager.updateQuest(questId, npcId);
+        // activate npc specific quest when quest1 is over
+        // if (questManager.quests["quest1"].status === "completed") {
+        //   questManager.activateQuest("quest3", "npc4");
+        // }
+      },
+      onLocationReached: (location, questId) => {
+        questManager.updateQuest(questId, location);
+      },
+      onItemCollected: (item, questId) => {
+        questManager.updateQuest(item, questId)
+      }
+    })
+  };
+
+  Object.keys(npcs).forEach(key => {
+    const npc = npcs[key];
+    // console.log(npc);
+    npc.load()
+  })
+
+  // Check loading status periodically
+  const checkLoadedInterval = setInterval(() => {
+    if (areAllNPCsLoaded()) {
+      console.log("✅ All NPCs are loaded!");
+      clearInterval(checkLoadedInterval); // Stop checking once they are loaded
+      npcs_loaded = true
+      questManager.activateQuest("quest1", "npc1")
+    } else {
+      console.log("⏳ Waiting for NPCs to load...");
+    }
+  }, 500);
+
+}
+
+function areAllNPCsLoaded() {
+  return Object.keys(npcs).length > 0 && Object.values(npcs).every(npc => {
+    // const npc = npcs[key]
+    console.log(npc.loaded);
+    // console.log(ke);
+    return npc.loaded === true
+  });
+}
+
+function update_npcs_animations() {
+  // is npc in view
+  Object.keys(npcs).forEach(key => {
+    const npc = npcs[key];
+    // console.log(npc);
+    npc.update(camera)
+  })
+}
+
+// this might be quite buggy
+// maybe find better solution inside of npc class itself
+function remove_npcs_dialogues() {
+  Object.keys(npcs).forEach(key => {
+    const npc = npcs[key];
+    // console.log(npc);
+    // npc.html.innerHTML = ''
+    npc.cancel_dialogue();
+  })
+}
+
+
+
+class Player {
+  // he also requires some quest like things
+  constructor(name) {
+    this.name = name;
+    this.currentQuest = "quest1"; // Starts with quest 1\
+    this.locations = {
+      quest1: { pos: new THREE.Vector2(10, 10), name: "first dither" },
+      quest3: { pos: new THREE.Vector2(10, -10), name: "second dither" },
+      quest4: { pos: new THREE.Vector2(-10, 10), name: "third dither" },
+    };
+    this.onLocationReached = (location, questId) => {
+      // this should be formulated as method like progress_quest with the task manager
+      const next_objective = questManager.get_next_objective(questId)
+      console.log(next_objective);
+      if(next_objective.type === "talk"){
+        console.log(npcs[next_objective.value]);
+        const npc = npcs[next_objective.value];
+        const part = next_objective.diag
+        npc.progress_dialogue_part(part)
+      }
+      questManager.updateQuest(questId, "go_to", location);
+    }
+    this.geom = new THREE.BoxGeometry(0.5, 300, 0.5);
+    this.mat = new THREE.MeshBasicMaterial();
+    this.mesh = new THREE.Mesh(this.geom, this.mat)
+    this.mesh.position.x = this.locations[this.currentQuest].pos.x
+    this.mesh.position.z = this.locations[this.currentQuest].pos.y
+
+  }
+
+  show_debug(scene) {
+    scene.add(this.mesh)
+  }
+
+  update_debug_position(){
+    this.mesh.position.x = this.locations[this.currentQuest].pos.x
+    this.mesh.position.z = this.locations[this.currentQuest].pos.y
+  }
+
+  talkTo(npc) {
+    if (npc) {
+      npc.talk(this.currentQuest);
+    }
+  }
+
+  updateQuestProgress(npc) {
+    // Check if any new quests have started
+    console.log(questManager.activeQuests);
+    questManager.activeQuests.forEach(questId => {
+      // console.log(object);
+      this.currentQuest = questId; // Set active quest
+    });
+  }
+
+  check_location() {
+    const pos = this.locations[this.currentQuest].pos;
+    // console.log(pos);
+    const player_pos = new THREE.Vector2(camera.position.x, camera.position.z);
+    const dist = player_pos.distanceTo(pos);
+    console.log(dist);
+    if (dist < 3) {
+      console.log('location reached');
+      this.onLocationReached(this.locations[this.currentQuest].name, this.currentQuest)
+    }
+  }
+}
+
+// Create Player Instance
+const player = new Player("~~~~");
+
+// // Simulating conversations
+// player.talkTo("npc3"); // Triggers quest 1 dialogue
+// player.talkTo("npc3"); // Exhausts dialogue → Activates Quest 2
+// player.updateQuestProgress(); // Player now follows Quest 2
+// player.talkTo("npc1"); // Continues Quest 2 dialogues
+
+
+
+// quest1: [
+//   "Hail, traveler! Welcome to the ever-fractured Archive, where light is not cast, but diffused! Thou stand\’st upon the very precipice of Dither, born in the year of our lords, nineteen and seventy-six, by the hands of the sages Floyd and Steinberg.",
+//   "Their wisdom was great, yet their method—error diffusion—could not be wielded by the iron-wrought engines of GPUs! A lost art, buried beneath the weight of modern rastering.",
+//   "Ah, but beware, for the Archive is no haven! It festers with the Rotten Trough, where errant pixels falter and cluster in cursed formation.",
+//   "Through t-SNE’s sorcery, images be gathered and compressed into semblances most unnatural. A tyranny of structure, where once reigned the gentle flow of quantization error—usurped, shackled, made to serve",
+//   "Yet, dost thou not see? The dithering thou dost find so pleasing, so finely scattered—'tis naught but a betrayal! A theft of chaos, reshaped into a false order!",
+//   "And so, traveler, I bid thee tread with caution, lest the Archive twist thy very form to match its will.",
+//   "Herein, each cube thou seest is a relic of an image past, reduced to its essence. And yet, they remain trapped, waiting for a hand to grant them new purpose!",
+//   "But hark! The Archive is vast and its structure unknowable! Thou must learn the art of swift traversal, lest thou be lost in its depths forever.",
+//   "A hidden tome lies within thy grasp — the browser console. Through it, thou mayest cast spells of knowledge and movement!",
+//   "Summon it thus: - **Firefox** – (Cmd + Shift + K) - **Chrome / Edge** – (Ctrl + Shift + J) - **Safari** – (Cmd + Option + C)",
+//   "Widither-archive/js/npc.jsthin its depths, thou mayest whisper ancient commands—fast travel, the seeking of coordinates, and more."
+// ],

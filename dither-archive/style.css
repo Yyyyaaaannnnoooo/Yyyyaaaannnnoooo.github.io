@@ -4,7 +4,7 @@ body {
   background-color: #000;
 }
 
-canvas{
+canvas {
   background: none !important;
 }
 
@@ -79,7 +79,26 @@ canvas{
   background-color: #f33;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  pointer-events: none; /* Ensure it doesn’t block clicks */
+  pointer-events: none;
+  /* Ensure it doesn’t block clicks */
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  height: 125px;
+  color: yellow;
+  /* background-color: #33ccffaa; */
+  width: 100%;
+}
+
+.dialogue{
+  width: 85%;
+  text-align: center;
 }
 
 /* media query for devices */

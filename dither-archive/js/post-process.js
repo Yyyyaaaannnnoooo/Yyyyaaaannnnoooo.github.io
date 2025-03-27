@@ -21,7 +21,7 @@ class GodRays {
     // this.bgColor = 0x000511;
     this.bgColor = 0x000511;
     this.sunColor = 0xffee00;
-    this.intensity = 0.25;
+    this.intensity = 0.35;
     this.clock = new THREE.Clock();
     this.angle = 0
 

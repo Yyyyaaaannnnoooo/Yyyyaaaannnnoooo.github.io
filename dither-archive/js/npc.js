@@ -2,16 +2,20 @@ import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
 class NPC {
-  constructor(scene, fbx_path, texture_path, pos, quat) {
-    this.scene = scene;
-    this.fbx_path = fbx_path;
-    this.texture_path = texture_path;
+  constructor(info, id, data) {
+    // console.log(info);
+    this.synth = window.speechSynthesis;
+    this.synth_voice = null;
+    this.html = document.querySelector('.dialogue')
+    this.scene = info.scene;
+    this.fbx_path = info.fbx_path;
+    this.texture_path = info.texture_path;
     this.mixer = null;
     this.clone_mixer = null;
     this.model = null;
     this.clock = new THREE.Clock();
-    this.pos = pos
-    this.quat = quat
+    this.pos = info.pos
+    this.quat = info.quat
     this.texture = null
     this.fbx_animations = {
       defeat: { url: 'js/3d/fbx/Defeated.fbx', clip: null },
@@ -26,27 +30,64 @@ class NPC {
     this.debug = null
     this.box
     this.center
+
+
+    this.frustum = new THREE.Frustum();
+    this.cameraViewProjectionMatrix = new THREE.Matrix4();
+
+    // quest stuff
+    this.id = id;
+    this.name = data.name;
+    this.voice = data.voice || "Grandpa"
+    this.dialogues = data.dialogues; // Organized by quest
+    this.idle_chatter = data.idle_chatter
+    this.in_view = false
+    this.dialogueState = {}; // Track progress per quest
+    this.dialogueExhausted = {}; // Track exhaustion per quest
+    this.dialogue_part = "part1"
+    this.onDialogueExhausted = data.onDialogueExhausted; // Callback for quest progression
+
+    // Initialize tracking per quest
+    Object.keys(this.dialogues).forEach(questId => {
+      const dialogues = this.dialogues[questId]
+      this.dialogueState[questId] = {}
+      this.dialogueExhausted[questId] = {}
+      Object.keys(dialogues).forEach(part => {
+        this.dialogueState[questId][part] = 0;
+        this.dialogueExhausted[questId][part] = false;
+      }
+      )
+
+    });
+
+
+    this.voice_list()
+  }
+  voice_list() {
+    const voices = this.synth.getVoices();
+    const filtered = voices.filter(item => item.lang.includes('en-GB'))
+    const deep_filtering = filtered.filter(item => item.name.startsWith(this.voice))
+    this.synth_voice = deep_filtering[0]
   }
 
   load() {
     const loader = new FBXLoader();
     loader.load(this.fbx_path, (object) => {
       this.model = object;
-
       this.mixer = new THREE.AnimationMixer(this.model);
-
       object.animations.forEach((clip) => {
         this.mixer.clipAction(clip).play();
       });
-      this.model.scale.set(0.005, 0.005, 0.005);
+      const scale = 0.0075;
+      this.model.scale.set(scale, scale, scale);
       this.model.updateMatrixWorld(true);
-      this.model.userData = { is_npc: true };
+      this.model.userData = { is_npc: true, npc: this };
       this.add_texture(this.texture_path);
       this.set_pos(this.pos);
       this.model.position.x += 2
       this.model.position.y -= 1
       this.set_quaternion(this.quat);
-      this.model.rotation.y += -Math.PI/1.5;
+      this.model.rotation.y += -Math.PI / 1.5;
       this.scene.add(this.model);
       const anim_arr = Object.keys(this.fbx_animations);
       let i = 0;
@@ -71,8 +112,7 @@ class NPC {
       this.mixer.clipAction(clip, this.model); // Apply animation
       if (last) {
         console.log('last clip loaded');
-        // this.play_animation('yell');
-        // this.load_clone()
+        // this.play_animation('sit');
         this.loaded = true
       }
     });
@@ -100,18 +140,21 @@ class NPC {
 
   add_texture(url) {
     const texture_loader = new THREE.TextureLoader();
-    this.texture = texture_loader.load(url, dither => {
-
+    texture_loader.load(url, (dither) => {
+      this.texture = dither
+      // console.log(dither);
       dither.wrapS = THREE.RepeatWrapping;
       dither.wrapT = THREE.RepeatWrapping;
-      dither.rotation = Math.PI / 2;
-      dither.offset = new THREE.Vector2(0, 10)
-      dither.repeat.set(3, 10);
-      this.model.traverse(function (child) {
+      dither.repeat.set(2, 2);
+      this.model.traverse(child => {
         if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
-          child.material = new THREE.MeshStandardMaterial({map: dither})
+          child.material.dispose()
+          child.material = new THREE.MeshStandardMaterial({
+            map: dither
+          })
+          // console.log(child.material);
         }
       });
     })
@@ -130,12 +173,139 @@ class NPC {
     this.model.updateMatrixWorld(true);
   }
 
-  update() {
-    if (this.mixer) {
+  // Check if NPC is visible
+  is_visible(camera) {
+    if (this.loaded === false) { return false }
+    camera.updateMatrixWorld(); // Ensure the camera is updated
+    this.cameraViewProjectionMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    this.frustum.setFromProjectionMatrix(this.cameraViewProjectionMatrix);
+
+    if (!this.model) return false;
+
+    // Find the main mesh in the FBX model
+    let mainMesh = this.model.children.find(child => child.isMesh);
+
+    if (!mainMesh) {
+      console.warn(`NPC ${this.model.name} has no mesh.`);
+      return false;
+    }
+
+    // Ensure it has a bounding box
+    if (!mainMesh.geometry.boundingBox) {
+      mainMesh.geometry.computeBoundingBox();
+    }
+
+    return this.frustum.intersectsObject(mainMesh);
+
+    // return this.frustum.intersectsObject(this.model);
+  }
+
+  update(camera) {
+    if (this.mixer && this.is_visible(camera)) {
       const delta = this.clock.getDelta();
       this.mixer.update(delta);
     }
   }
+
+  select_random_chatter() {
+    const len = this.idle_chatter.length;
+    let random_index = Math.floor(Math.random() * len)
+    if (random_index >= len) { random_index = len - 1 }
+    return this.idle_chatter[random_index]
+  }
+
+  get_dialogue(quest) {
+    return this.dialogues[quest][this.dialogue_part]
+  }
+  get_dialogue_state(quest) {
+    return this.dialogueState[quest][this.dialogue_part]
+  }
+  get_dialogue_exhausted(quest) {
+    return this.dialogueExhausted[quest][this.dialogue_part]
+  }
+
+  progress_dialogue_part(part){
+    this.dialogue_part = part
+  }
+
+  set_dialogue_part(part) { 
+    this.dialogue_part = part
+    console.log(this.dialogue_part);
+  }
+
+  talk(currentQuest, part) {
+    // console.log(currentQuest);
+    // console.log(this.dialogues["quest1"]);
+    if (!this.get_dialogue(currentQuest)) {
+      console.log(`idle chatter bc there is no dialogue for quest: ${currentQuest}`);
+      this.idle_speak()
+      return;
+    }
+
+    if (this.get_dialogue_state(currentQuest) < this.get_dialogue(currentQuest).length) {
+      const txt = `${this.name}:\n "${this.get_dialogue(currentQuest)[this.get_dialogue_state(currentQuest)]}"`
+      console.log(this.dialogueState);
+      this.html.textContent = txt;
+      this.speak(this.get_dialogue(currentQuest)[this.get_dialogue_state(currentQuest)])
+      // this.get_dialogue_state(currentQuest)++;
+      this.dialogueState[currentQuest][this.dialogue_part]++
+    }
+
+    // If last dialogue is reached, mark as exhausted and trigger quest update
+    if (this.get_dialogue_state(currentQuest) >= this.get_dialogue(currentQuest).length && !this.get_dialogue_exhausted(currentQuest)) {
+      // this.get_dialogue_exhausted(currentQuest) = true;
+      this.dialogueExhausted[currentQuest][this.dialogue_part] = true
+      console.log(`${this.name} has finished their dialogue for ${currentQuest} ${this.dialogue_part}.`);
+      if (this.onDialogueExhausted) {
+        this.onDialogueExhausted(this.id, currentQuest);
+      }
+    }
+  }
+
+  idle_speak() {
+    const idle = this.select_random_chatter()
+    const txt = `${this.name}:${idle}`
+    console.log(txt);
+    this.html.textContent = txt;
+    this.speak(idle)
+  }
+
+  speak(txt) {
+    this.synth.cancel();
+    const utterThis = new SpeechSynthesisUtterance(txt);
+    utterThis.voice = this.synth_voice;
+    utterThis.pitch = 0.75;
+    utterThis.rate = 0.65;
+    this.synth.speak(utterThis);
+  }
+
+  cancel_dialogue() {
+    this.html.innerHTML = '';
+    this.synth.cancel();
+  }
+
 }
 
 export { NPC };
+
+
+
+
+// class NPC {
+//   constructor(id, data) {
+//     this.id = id;
+//     this.name = data.name;
+//     this.dialogues = data.dialogues; // Organized by quest
+//     this.dialogueState = {}; // Track progress per quest
+//     this.dialogueExhausted = {}; // Track exhaustion per quest
+//     this.onDialogueExhausted = data.onDialogueExhausted; // Callback for quest progression
+
+//     // Initialize tracking per quest
+//     Object.keys(this.dialogues).forEach(questId => {
+//       this.dialogueState[questId] = 0;
+//       this.dialogueExhausted[questId] = false;
+//     });
+//   }
+
+
+// }
