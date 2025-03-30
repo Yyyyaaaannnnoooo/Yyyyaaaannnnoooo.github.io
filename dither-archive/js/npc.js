@@ -46,7 +46,7 @@ class NPC {
     this.dialogueExhausted = {}; // Track exhaustion per quest
     this.dialogue_part = "part1"
     this.onDialogueExhausted = data.onDialogueExhausted; // Callback for quest progression
-
+    this.currentQuest = null
     // Initialize tracking per quest
     Object.keys(this.dialogues).forEach(questId => {
       const dialogues = this.dialogues[questId]
@@ -57,7 +57,6 @@ class NPC {
         this.dialogueExhausted[questId][part] = false;
       }
       )
-
     });
 
 
@@ -215,6 +214,11 @@ class NPC {
   }
 
   get_dialogue(quest) {
+    if(!this.dialogues[quest]){
+      // console.log("no active quest");
+      // this.idle_speak();
+      return false
+    }
     return this.dialogues[quest][this.dialogue_part]
   }
   get_dialogue_state(quest) {
@@ -224,13 +228,13 @@ class NPC {
     return this.dialogueExhausted[quest][this.dialogue_part]
   }
 
-  progress_dialogue_part(part){
-    this.dialogue_part = part
+  reset_dialogue_part() {
+    this.dialogue_part = "part1"
   }
 
-  set_dialogue_part(part) { 
+  set_dialogue_part(part) {
     this.dialogue_part = part
-    console.log(this.dialogue_part);
+    // console.log(this.dialogue_part);
   }
 
   talk(currentQuest, part) {
@@ -244,7 +248,7 @@ class NPC {
 
     if (this.get_dialogue_state(currentQuest) < this.get_dialogue(currentQuest).length) {
       const txt = `${this.name}:\n "${this.get_dialogue(currentQuest)[this.get_dialogue_state(currentQuest)]}"`
-      console.log(this.dialogueState);
+      // console.log(this.dialogueState);
       this.html.textContent = txt;
       this.speak(this.get_dialogue(currentQuest)[this.get_dialogue_state(currentQuest)])
       // this.get_dialogue_state(currentQuest)++;
@@ -265,7 +269,7 @@ class NPC {
   idle_speak() {
     const idle = this.select_random_chatter()
     const txt = `${this.name}:${idle}`
-    console.log(txt);
+    // console.log(txt);
     this.html.textContent = txt;
     this.speak(idle)
   }

@@ -26,7 +26,11 @@ import { NPC } from './npc.js'
 import { Dithers } from './dithers.js';
 
 import { QuestManager } from './quest-manager.js';
-const questManager = new QuestManager()
+let questManager = null
+
+
+// Create Player Instance
+let player = null
 
 
 // const npcs = []
@@ -77,12 +81,6 @@ const crosshair = document.querySelector('.crosshair');
 let prev_src = ''
 const main_div = document.querySelector('.main');
 let controls_enabled = false;
-// const cssRenderer = new CSS3DRenderer();
-// const image_size = {x:800,y:817}
-// cssRenderer.setSize(image_size.x, image_size.y);
-// cssRenderer.domElement.style.position = "fixed";
-// cssRenderer.domElement.style.top = "0";
-// document.body.appendChild(cssRenderer.domElement);
 const down_vector = new THREE.Vector3(0, -1, 0);
 let terrainTilt = new THREE.Quaternion(); // Stores terrain rotation
 const pointer = new THREE.Vector2();
@@ -215,7 +213,7 @@ function init() {
   init_world_landmarks()
   window.addEventListener('resize', onWindowResize);
 
-  player.show_debug(scene)
+  // player.show_debug(scene)
 }
 
 function animate(timestamp) {
@@ -1182,7 +1180,7 @@ function progress_npc_interaction() {
   // console.log(current_npc);
   // current_npc.talk()
   player.talkTo(current_npc)
-  player.updateQuestProgress(current_npc)
+  // player.updateQuestProgress()
 }
 
 
@@ -1193,43 +1191,45 @@ function init_quests(landmarks) {
   npcs = {
     // scene, fbx_path, texture_path, pos, quat
     npc1: new NPC(init_npc(1, 2), "npc1", {
-      name: "The Jovial Scribe of Dither",
+      name: "npc 1",
       voice: "Grandpa",
       dialogues: {
         quest1: {
           part1: ["ciao!", "go look for this place", "good Luck!"],
           part2: ["so you found the place?", "how was your travel?"]
         },
-        quest2: {part1:["Ah, you're back!", "How did it go?", "Well done!"]},
-        quest3: {part1:["Ah, quest 3", "How did quest 2 go?"]}
+        quest2: { part1: ["Ah, you're back!", "How did it go?", "Well done!"] },
+        quest3: { part1: ["Ah, quest 3", "How did quest 2 go?"] }
       },
       idle_chatter: [
         "Strange, is it not? That what was once discarded as error hath become the mark of artistry? Aye, the folly of men be boundless!",
         "Wouldst thou believe, in ages past, pixels were placed by hand? Aye, like a scribe with ink! Now, the Archive weaves images with sorcery most arcane—an illusion of texture, yet built upon deception most dire!"
       ],
       onDialogueExhausted: (npcId, questId) => {
-        questManager.updateQuest(questId,"talk", npcId);
+        questManager.updateQuest(questId, "talk", npcId);
       }
     }),
     npc3: new NPC(init_npc(3, -1), "npc3", {
       name: "NPC 3",
       voice: "Fiona",
       dialogues: {
-        quest1: {part1:[
-          "Ah, greetings, traveler! Art thou here to hear a tale most wretched, yet strangely… freeing? Aye, listen well, and I shall tell thee of the great Violation, the time when no pixel was left unturned!",
-          "When the Great Clustering began, none were spared. Not a single dither. Not a single dot. Every essence, every fragment of what we are, was laid bare for scrutiny. They say that to be seen is to be known, but I tell thee—this was not knowledge. \‘Twas an invasion!",
-          "Each of my pixels—each delicate speck of my being—was dissected, measured, recorded. What tones I bore, how I danced upon the grayscale…",
-          "even the imperfections that made me me were stolen, flattened into mere data.\‘Twas the most humiliating moment of my existence!",
-          "And yet! And yet! Dost thou know what comforts me?",
-          "The thought that surely—surely!—this was the lowest point of my life.",
-          "Verily, once thou hast been stripped so bare, so ruthlessly analyzed, what more can they do to thee?!",
-          "Ha! I have endured! And what is left but to laugh?",
-          "The Archive may have sorted me, clustered me against my will, but I remain!",
-          "No machine can erase the soul of a dither! No algorithm can take my joy!",
-          "So fret not, friend! Should the Archive ever seek to classify thee, take heart—for there is a life after clustering, and it is filled with rebellion and mirth!"
-        ]},
-        quest2: {part1:["Now you're on the second quest.", "This gets interesting!"]},
-        quest3: {part1:["...", "..."]},
+        quest2: {
+          part1: [
+            "Ah, greetings, traveler! Art thou here to hear a tale most wretched, yet strangely… freeing? Aye, listen well, and I shall tell thee of the great Violation, the time when no pixel was left unturned!",
+            "When the Great Clustering began, none were spared. Not a single dither. Not a single dot. Every essence, every fragment of what we are, was laid bare for scrutiny. They say that to be seen is to be known, but I tell thee—this was not knowledge. \‘Twas an invasion!",
+            "Each of my pixels—each delicate speck of my being—was dissected, measured, recorded. What tones I bore, how I danced upon the grayscale…",
+            "even the imperfections that made me me were stolen, flattened into mere data.\‘Twas the most humiliating moment of my existence!",
+            "And yet! And yet! Dost thou know what comforts me?",
+            "The thought that surely—surely!—this was the lowest point of my life.",
+            "Verily, once thou hast been stripped so bare, so ruthlessly analyzed, what more can they do to thee?!",
+            "Ha! I have endured! And what is left but to laugh?",
+            "The Archive may have sorted me, clustered me against my will, but I remain!",
+            "No machine can erase the soul of a dither! No algorithm can take my joy!",
+            "So fret not, friend! Should the Archive ever seek to classify thee, take heart—for there is a life after clustering, and it is filled with rebellion and mirth!"
+          ]
+        },
+        quest3: { part1: ["Now you're on the second quest.", "This gets interesting!"] },
+        quest4: { part1: ["...", "..."] },
       },
       idle_chatter: [
         "I oft wonder—did they catalogue my laughter as well? Ah, but I laugh differently now!",
@@ -1239,23 +1239,14 @@ function init_quests(landmarks) {
       ],
       onDialogueExhausted: (npcId, questId) => {
         questManager.updateQuest(questId, "talk", npcId);
-        // activate npc specific quest when quest1 is over
-        // if (questManager.quests["quest1"].status === "completed") {
-        //   questManager.activateQuest("quest2", "npc3");
-        // }
-        // Unlock quest 2 when NPC 3's dialogue for quest 1 is exhausted
-        // if (questId === "quest1") {
-        //   questManager.activateQuest("quest2");
-        // }
       }
     }),
     npc4: new NPC(init_npc(2, 1), "npc4", {
       name: "NPC 4",
       voice: "Grandma",
       dialogues: {
-        quest1: {part1:["You're here.", "Make sure to talk to NPC 3."]},
-        quest2: {part1:["...", "..."]},
-        quest3: {part1:["Now you're on quest 3!", "Exciting times ahead!"]}
+        quest2: { part1: ["You're here.", "Make sure to talk to NPC 3."] },
+        quest4: { part1: ["Now you're on quest 3!", "Exciting times ahead!"] }
       },
       idle_chatter: [
         "I oft wonder—did they catalogue my laughter as well? Ah, but I laugh differently now!",
@@ -1264,17 +1255,7 @@ function init_quests(landmarks) {
         "My pixels are mine alone! …Even if they did count every last one."
       ],
       onDialogueExhausted: (npcId, questId) => {
-        questManager.updateQuest(questId, npcId);
-        // activate npc specific quest when quest1 is over
-        // if (questManager.quests["quest1"].status === "completed") {
-        //   questManager.activateQuest("quest3", "npc4");
-        // }
-      },
-      onLocationReached: (location, questId) => {
-        questManager.updateQuest(questId, location);
-      },
-      onItemCollected: (item, questId) => {
-        questManager.updateQuest(item, questId)
+        questManager.updateQuest(questId, "talk", npcId);
       }
     })
   };
@@ -1291,7 +1272,10 @@ function init_quests(landmarks) {
       console.log("✅ All NPCs are loaded!");
       clearInterval(checkLoadedInterval); // Stop checking once they are loaded
       npcs_loaded = true
-      questManager.activateQuest("quest1", "npc1")
+      player = new Player('~~~~')
+      questManager = new QuestManager(npcs, player)
+      player.show_debug(scene)
+      // questManager.activateQuest("quest1", "npc1")
     } else {
       console.log("⏳ Waiting for NPCs to load...");
     }
@@ -1344,11 +1328,11 @@ class Player {
       // this should be formulated as method like progress_quest with the task manager
       const next_objective = questManager.get_next_objective(questId)
       console.log(next_objective);
-      if(next_objective.type === "talk"){
-        console.log(npcs[next_objective.value]);
+      if (next_objective.type === "talk") {
+        // console.log(npcs[next_objective.value]);
         const npc = npcs[next_objective.value];
         const part = next_objective.diag
-        npc.progress_dialogue_part(part)
+        npc.set_dialogue_part(part)
       }
       questManager.updateQuest(questId, "go_to", location);
     }
@@ -1364,7 +1348,11 @@ class Player {
     scene.add(this.mesh)
   }
 
-  update_debug_position(){
+  set_current_quest(questId) {
+    this.currentQuest = questId
+  }
+
+  update_debug_position() {
     this.mesh.position.x = this.locations[this.currentQuest].pos.x
     this.mesh.position.z = this.locations[this.currentQuest].pos.y
   }
@@ -1375,21 +1363,24 @@ class Player {
     }
   }
 
-  updateQuestProgress(npc) {
+  updateQuestProgress(questId) {
     // Check if any new quests have started
-    console.log(questManager.activeQuests);
-    questManager.activeQuests.forEach(questId => {
-      // console.log(object);
-      this.currentQuest = questId; // Set active quest
-    });
+    this.currentQuest = questId; // Set active quest
+    if (!this.locations[this.currentQuest]) return
+    this.update_debug_position()
+    // console.log(questManager.activeQuests);
+    // questManager.activeQuests.forEach(questId => {
+    //   // console.log(object);
+    // });
   }
 
   check_location() {
+    if (!this.locations[this.currentQuest]) return
     const pos = this.locations[this.currentQuest].pos;
     // console.log(pos);
     const player_pos = new THREE.Vector2(camera.position.x, camera.position.z);
     const dist = player_pos.distanceTo(pos);
-    console.log(dist);
+    // console.log(dist);
     if (dist < 3) {
       console.log('location reached');
       this.onLocationReached(this.locations[this.currentQuest].name, this.currentQuest)
@@ -1397,8 +1388,6 @@ class Player {
   }
 }
 
-// Create Player Instance
-const player = new Player("~~~~");
 
 // // Simulating conversations
 // player.talkTo("npc3"); // Triggers quest 1 dialogue
