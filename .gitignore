@@ -31,5 +31,6 @@ Temporary Items
 proto/js/three-master/*
 dither-archive/imgs/media/*
 dither-archive/imgs/normals/*
-dither-archive/audio/*
-dither-archive/audio
+# dither-archive/audio/*
+# dither-archive/audio
+dither-archive/audio/soundtrack Project
