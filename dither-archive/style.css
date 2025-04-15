@@ -1,11 +1,22 @@
+@font-face {
+  font-family: 'pix';
+  src: url(Web437_EagleSpCGA_Alt3-2y.woff) format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
   margin: 0;
   padding: 0;
   background-color: #000;
+  font-family: 'pix', serif;
+
 }
 
 canvas {
   background: none !important;
+  border: #000000 solid 5px;
+  border-style: ridge;
 }
 
 #c {
@@ -17,6 +28,56 @@ canvas {
   /* height: 100vh; */
 }
 
+#blocker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  /* center its content */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+
+#instructions,
+.quest-info {
+  padding: 2rem;
+  background-color: #ffffffaa;
+  margin: 20px;
+  border: #000000 solid 5px;
+  border-style: ridge;
+}
+
+#instructions p {
+  cursor: pointer;
+}
+
+.quest-info{
+  width: 50%;
+}
+
+.volume {
+  border: #000000 solid 5px;
+  border-style: ridge;
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.quest-info {
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
 .main {
   visibility: hidden;
   position: fixed;
@@ -25,11 +86,12 @@ canvas {
   padding: 0px 10px 0px 10px;
   z-index: 1;
   width: 100%;
-  height: auto;
+  height: 100vh;
   /* overflow-y: scroll; */
   background-color: rgba(0, 0, 0, 0.3);
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 1em;
+  /* font-family: 'Courier New', Courier, monospace; */
+  /* font-family: 'pix', serif; */
+  font-size: 1.25em;
   border-radius: 10px;
   display: flex;
 }
@@ -39,7 +101,7 @@ canvas {
 }
 
 .main p {
-  color: #33f;
+  color: cornflowerblue;
   font-weight: bold;
 }
 
@@ -51,22 +113,27 @@ canvas {
   color: #3cf;
 }
 
-.btn {
-  /* position: absolute; */
-  /* bottom: 5px; */
-  /* right: 5px; */
+.btn,
+.save {
+  position: absolute;
+  bottom: 5px;
+  left: 25px;
   /* this is a button and needs some buttony css */
   cursor: pointer;
-  /* background-color: #f1f1f1; */
+  background-color: ghostwhite ;
   /* border: 1px solid black; */
   /* border should be slightly round */
-  /* border-radius: 5px; */
+  border-radius: 5px;
   padding: 5px;
   /* should be a wide as the text */
   width: max-content;
-  color: #f33;
+  color: crimson;
   font-weight: bold;
   font-size: 1.5em;
+}
+
+.save {
+  left: 150px;
 }
 
 /* Add this to your CSS */
@@ -76,7 +143,7 @@ canvas {
   left: 50%;
   width: 10px;
   height: 10px;
-  background-color: #f33;
+  background-color: crimson;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
@@ -91,14 +158,43 @@ canvas {
   bottom: 0px;
   left: 0px;
   height: 125px;
-  color: yellow;
+  color: black;
   /* background-color: #33ccffaa; */
   width: 100%;
+  text-shadow: #fc3 0px 0px 15px;
+  font-size: 1.25rem;
 }
 
-.dialogue{
+.dialogue {
   width: 85%;
   text-align: center;
+}
+
+.main-right {
+  width: 50%;
+  overflow-y: scroll;
+  background-color: ghostwhite;
+  padding-left: 0.5rem;
+}
+
+.text-container {
+  /* background-color: #33ccffaa; */
+  /* font-family: 'Times New Roman', Times, serif; */
+  /* font-family: 'pix', 'Times New Roman', Times, serif; */
+}
+
+.image {
+  /* padding: 2rem; */
+  /* background-color: #3333ffaa; */
+  width: 60%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image img {
+  width: 95%;
+  height: auto;
 }
 
 /* media query for devices */

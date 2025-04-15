@@ -2,7 +2,7 @@ An Archive Theory of Clustering Tiranny
 
 The Lore of Error Diffusion
 
-Is a game I am developing in three.js, i do not need any code, but I need dialogues for main 6 npc and for a single questline where the player needs to save images.
+Is a game I am developing in three.js, i do not need any code, but I need dialogues for main 8 npc and for a single questline where the player needs to save images.
 
 npc 1 (rather happy character): he is the first encountered npc and introduces the player to the game and the lore. he explains how dither was born in 1976 from floyd-steinberg using error diffusion. an approach not possible on gpus. then he also introduces the rotten trought of the archive and the clustering of images based on tsne. furthermore he hints at the fact that this "pretty" dither were born from the usurpation of the quantzation error.
 

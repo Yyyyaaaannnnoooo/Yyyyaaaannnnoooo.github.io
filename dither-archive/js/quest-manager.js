@@ -1,7 +1,6 @@
 class QuestManager {
   constructor(npcs, player) {
     this.npcs = npcs;
-    console.log(npcs);
     this.player = player;
     this.quests = {
       quest1: {
@@ -9,7 +8,7 @@ class QuestManager {
         name: "Game Mechanics",
         status: "inactive",
         objectives: [
-          { type: "talk", value: "npc1", diag: "part1", completed: false },
+          { type: "talk", value: "npc5", diag: "part1", completed: false },
           // { type: "go_to", value: "first dither", completed: false },
           // { type: "talk", value: "npc1", diag: "part2", completed: false },
         ],
@@ -21,35 +20,41 @@ class QuestManager {
         status: "inactive",
         objectives: [
           { type: "talk", value: "npc1", diag: "part1", completed: false },
-          // { type: "talk", value: "npc2", completed: false },
+          { type: "talk", value: "npc2", diag: "part1", completed: false },
           { type: "talk", value: "npc3", diag: "part1", completed: false },
           { type: "talk", value: "npc4", diag: "part1", completed: false },
-          // { type: "talk", value: "npc5", completed: false },
-          // { type: "talk", value: "npc6", completed: false }
+          { type: "talk", value: "npc5", diag: "part1", completed: false },
+          { type: "talk", value: "npc6", diag: "part1", completed: false }
         ],
         currentObjectiveIndex: 0
       },
       quest3: {
         id: "quest3",
-        name: "Return to NPC3",
+        name: "The Cursed Constants: A Ditherer's Burden",
         status: "inactive",
         requirements: ["quest1"],
         objectives: [
+          { type: "talk", value: "npc1", diag: "part1", completed: false },
+          { type: "talk", value: "npc2", diag: "part1", completed: false },
           { type: "talk", value: "npc3", diag: "part1", completed: false },
-          // { type: "go_to", value: "second dither", completed: false },
-          { type: "talk", value: "npc1", diag: "part1", completed: false }
+          { type: "talk", value: "npc4", diag: "part1", completed: false },
+          { type: "talk", value: "npc5", diag: "part1", completed: false },
+          { type: "talk", value: "npc6", diag: "part1", completed: false },
         ],
         currentObjectiveIndex: 0
       },
       quest4: {
         id: "quest4",
-        name: "The Next Step",
+        name: "Gloomy Agents of Order: The War That Never Ended",
         status: "inactive",
         requirements: ["quest1"],
         objectives: [
+          // { type: "go_to", value: "third dither", completed: false },
+          { type: "talk", value: "npc1", diag: "part1", completed: false },
+          { type: "talk", value: "npc2", diag: "part1", completed: false },
+          { type: "talk", value: "npc3", diag: "part1", completed: false },
           { type: "talk", value: "npc4", diag: "part1", completed: false },
-          { type: "go_to", value: "third dither", completed: false },
-          { type: "talk", value: "npc3", diag: "part1", completed: false }
+          { type: "talk", value: "npc6", diag: "part1", completed: false }
         ],
         currentObjectiveIndex: 0
       }
@@ -57,21 +62,57 @@ class QuestManager {
 
     this.quest_list = Object.keys(this.quests);
     this.quests_progress = 0;
-    console.log(this.quest_list);
     this.activeQuests = new Set();
     this.current_quest = this.quest_list[this.quests_progress]
+    
+    this.html_name = document.querySelector(".quest-name");
+    console.log(this.html_name);
+    this.html_description = document.querySelector(".quest-text");
     this.activateQuest(this.current_quest)
+
   }
 
-  activateQuest(questId, npcId) {
+  activateQuest(questId) {
     if (this.quests_progress >= this.quest_list.length) {
       console.log('all quests completed');
     }
     if (this.quests[questId] && this.quests[questId].status === "inactive") {
       this.quests[questId].status = "active";
       this.activeQuests.add(questId);
-      console.log(`🧩🧩 Quest Activated: ${this.quests[questId].name}`);
+      console.log(`🪼🪼 Quest Activated: ${this.quests[questId].name}`);
+      // this.html_name.textContent = 
+
+      this.update_html(questId);
+
     }
+  }
+
+  update_html(questId) {
+    this.html_name.innerHTML = "";
+    this.html_description.innerHTML = "";
+    let p = document.createElement("p");
+    p.textContent = `🪼🪼 Active Quest: ${this.quests[questId].name} 🪼🪼`
+    this.html_name.appendChild(p);
+    // calculate completion progress of quest
+    let completion = this.quests[questId].objectives.filter(o => o.completed).length;
+    console.log(completion);
+    let total = this.quests[questId].objectives.length;
+    let progress = Math.floor((completion / total) * 100);
+    let p2 = document.createElement("p");
+    p2.textContent = `Quest Progress: ${progress}%`
+    this.html_description.appendChild(p2);
+
+    this.quests[questId].objectives.forEach(objective => {
+      let p = document.createElement("p");
+      if (objective.completed) {
+        p.textContent = `🧚🏼 ${objective.type} to ${objective.value}: ${this.npcs[objective.value].name}`;
+      } else {
+        p.textContent = `👹 ${objective.type} to ${objective.value}: ${this.npcs[objective.value].name}`;
+      }
+      this.html_description.appendChild(p);
+    }
+    )
+
   }
 
   deactivate_quest(questId) {
@@ -85,9 +126,7 @@ class QuestManager {
     }
     return this.quests[questId].objectives[next_objective_index]
   }
-
   move_to_next_quest() {
-
   }
 
   updateQuest(questId, type, value) {
@@ -95,74 +134,25 @@ class QuestManager {
     let quest = this.quests[questId];
     if (!quest || quest.status !== "active") {
       console.log('return');
+      console.log('here there should be idle speak?');
       return;
     }
 
-    // let currentObjective = quest.objectives[quest.currentObjectiveIndex];
-    // // console.log(currentObjective);
-    // if (!currentObjective) return; // No more objectives
-
-
-    // if ((type === currentObjective.type && value === currentObjective.value) && !currentObjective.completed) {
-    //   currentObjective.completed = true;
-    //   console.log(`✅ Objective Completed: ${type} ${value}`);
-    //   const next_objective = this.get_next_objective(questId)
-    //   console.log(next_objective);
-    //   if (next_objective.type === "talk") {
-    //     // console.log(npcs[next_objective.value]);
-    //     const npc = this.npcs[next_objective.value];
-    //     const part = next_objective.diag
-    //     npc.set_dialogue_part(part)
-    //   }
-    //   // Move to the next objective
-    //   quest.currentObjectiveIndex++;
-    //   if (quest.currentObjectiveIndex >= quest.objectives.length) {
-    //     quest.status = "completed";
-    //     console.log(`🎉 Quest Completed: ${quest.name}`);
-    //     this.deactivate_quest(questId);
-    //     switch (questId) {
-    //       case "quest1":
-    //         // move to quest2
-    //         this.progress_quests("quest2");
-    //         break;
-    //       case "quest2":
-    //         // move to quest3
-    //         this.progress_quests("quest3");
-    //         break;
-    //       case "quest2":
-    //         // move to quest4
-    //         this.progress_quests("quest4");
-    //         break;
-
-    //       default:
-    //         break;
-    //     }
-
-    //     if (quest.onComplete) quest.onComplete();
-    //   }
-    // } else {
-    //   console.log(`🚫 You need to complete the previous step first!`);
-    // }
-    // let objective = quest.objectives.find(o => o.npc === npcId);
-    // console.log(objective);
-
+    
     let objective;
     switch (type) {
       case "talk":
-        console.log("case talk");
-        console.log(quest.objectives);
+        // console.log("case talk");
+        // console.log(quest.objectives);
         objective = quest.objectives.find(o => {
-          console.log(o);
-          console.log(value);
-          console.log(o.type === "talk");
-          console.log(o.value === value);
           return o.type === "talk" && o.value === value
         });
-        console.log(objective);
+        // console.log(objective);
         console.log(`✅ Objective Completed: ${type} ${value}`);
         objective.completed = true;
+        this.update_html(questId);
         const next_objective = this.get_next_objective(questId)
-        console.log(next_objective);
+        // console.log(next_objective);
         if (next_objective.type === "talk") {
           // console.log(npcs[next_objective.value]);
           const npc = this.npcs[next_objective.value];
@@ -198,7 +188,7 @@ class QuestManager {
           // move to quest3
           this.progress_quests("quest3");
           break;
-        case "quest2":
+        case "quest3":
           // move to quest4
           this.progress_quests("quest4");
           break;

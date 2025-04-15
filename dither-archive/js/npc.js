@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
 class NPC {
-  constructor(info, id, data) {
+  constructor(info, id, data, animation) {
     // console.log(info);
     this.synth = window.speechSynthesis;
     this.synth_voice = null;
@@ -15,15 +15,17 @@ class NPC {
     this.model = null;
     this.clock = new THREE.Clock();
     this.pos = info.pos
+    console.log(`${data.name} has been placed x: ${this.pos.x} y: ${this.pos.z}`);
     this.quat = info.quat
     this.texture = null
+    this.anim = animation || null
     this.fbx_animations = {
-      defeat: { url: 'js/3d/fbx/Defeated.fbx', clip: null },
+      crouch: { url: 'js/3d/fbx/Crouch.fbx', clip: null },
       yell: { url: 'js/3d/fbx/Yelling.fbx', clip: null },
       sad: { url: 'js/3d/fbx/Sad-Idle.fbx', clip: null },
-      talk: { url: 'js/3d/fbx/Talking.fbx', clip: null },
-      sit: { url: 'js/3d/fbx/Sitting-Idle.fbx', clip: null },
-      // lay: { url: 'js/3d/fbx/Laying-Idle.fbx', clip: null },
+      dle: { url: 'js/3d/fbx/Idle3.fbx', clip: null },
+      pray: { url: 'js/3d/fbx/Praying.fbx', clip: null },
+      lay: { url: 'js/3d/fbx/Laying-Idle.fbx', clip: null },
     }
     this.clips = {}
     this.loaded = false
@@ -38,7 +40,7 @@ class NPC {
     // quest stuff
     this.id = id;
     this.name = data.name;
-    this.voice = data.voice || "Grandpa"
+    this.voice = data.voice || "Grandma"
     this.dialogues = data.dialogues; // Organized by quest
     this.idle_chatter = data.idle_chatter
     this.in_view = false
@@ -61,10 +63,22 @@ class NPC {
 
 
     this.voice_list()
+
   }
   voice_list() {
     const voices = this.synth.getVoices();
-    const filtered = voices.filter(item => item.lang.includes('en-GB'))
+    // getVoices() returns an empty array when called immediately after page load
+    // so we need to wait for the voices to be loaded
+    if (voices.length === 0) {
+      console.log('no voices loaded yet');
+      this.synth.addEventListener('voiceschanged', () => {
+        this.voice_list();
+      });
+      return;
+    }
+    const filtered = voices.filter(item => item.lang.includes('en'))
+    console.log(filtered);
+    // add a filter that finds whispering voices
     const deep_filtering = filtered.filter(item => item.name.startsWith(this.voice))
     this.synth_voice = deep_filtering[0]
   }
@@ -110,9 +124,15 @@ class NPC {
       this.fbx_animations[name].clip = clip
       this.mixer.clipAction(clip, this.model); // Apply animation
       if (last) {
-        console.log('last clip loaded');
-        // this.play_animation('sit');
+        // console.log('last clip loaded');
         this.loaded = true
+        // if (this.anim !== null) this.play_animation(this.anim);
+
+        // wait 2 seconds and play idle
+        setTimeout(() => {
+          if (this.anim !== null) this.play_animation(this.anim);
+        }, 2000);
+
       }
     });
   }
@@ -151,7 +171,9 @@ class NPC {
           child.receiveShadow = true;
           child.material.dispose()
           child.material = new THREE.MeshStandardMaterial({
-            map: dither
+            map: dither,
+            metalness: 0,
+            roughness: 0
           })
           // console.log(child.material);
         }
@@ -164,7 +186,7 @@ class NPC {
     this.model.position.y = pos.y
     this.model.position.z = pos.z
     this.model.updateMatrixWorld(true);
-
+    // console.log(this.model);
   }
 
   set_quaternion(quat) {
@@ -203,6 +225,8 @@ class NPC {
     if (this.mixer && this.is_visible(camera)) {
       const delta = this.clock.getDelta();
       this.mixer.update(delta);
+      // this.model.lookAt(camera.position)
+      this.model.rotation.y = Math.atan2((camera.position.x - this.model.position.x), (camera.position.z - this.model.position.z));
     }
   }
 
@@ -214,7 +238,7 @@ class NPC {
   }
 
   get_dialogue(quest) {
-    if(!this.dialogues[quest]){
+    if (!this.dialogues[quest]) {
       // console.log("no active quest");
       // this.idle_speak();
       return false
@@ -234,12 +258,11 @@ class NPC {
 
   set_dialogue_part(part) {
     this.dialogue_part = part
-    // console.log(this.dialogue_part);
   }
 
-  talk(currentQuest, part) {
+  talk(currentQuest) {
     // console.log(currentQuest);
-    // console.log(this.dialogues["quest1"]);
+    // console.log(this.dialogues[currentQuest]);
     if (!this.get_dialogue(currentQuest)) {
       console.log(`idle chatter bc there is no dialogue for quest: ${currentQuest}`);
       this.idle_speak()
@@ -253,13 +276,15 @@ class NPC {
       this.speak(this.get_dialogue(currentQuest)[this.get_dialogue_state(currentQuest)])
       // this.get_dialogue_state(currentQuest)++;
       this.dialogueState[currentQuest][this.dialogue_part]++
+    } else {
+      this.idle_speak()
     }
 
     // If last dialogue is reached, mark as exhausted and trigger quest update
     if (this.get_dialogue_state(currentQuest) >= this.get_dialogue(currentQuest).length && !this.get_dialogue_exhausted(currentQuest)) {
       // this.get_dialogue_exhausted(currentQuest) = true;
       this.dialogueExhausted[currentQuest][this.dialogue_part] = true
-      console.log(`${this.name} has finished their dialogue for ${currentQuest} ${this.dialogue_part}.`);
+      // console.log(`${this.name} has finished their dialogue for ${currentQuest} ${this.dialogue_part}.`);
       if (this.onDialogueExhausted) {
         this.onDialogueExhausted(this.id, currentQuest);
       }
@@ -268,7 +293,7 @@ class NPC {
 
   idle_speak() {
     const idle = this.select_random_chatter()
-    const txt = `${this.name}:${idle}`
+    const txt = `${this.name}: ${idle}`
     // console.log(txt);
     this.html.textContent = txt;
     this.speak(idle)
@@ -278,8 +303,8 @@ class NPC {
     this.synth.cancel();
     const utterThis = new SpeechSynthesisUtterance(txt);
     utterThis.voice = this.synth_voice;
-    utterThis.pitch = 0.75;
-    utterThis.rate = 0.65;
+    utterThis.pitch = 2.75;
+    utterThis.rate = 0.9;
     this.synth.speak(utterThis);
   }
 

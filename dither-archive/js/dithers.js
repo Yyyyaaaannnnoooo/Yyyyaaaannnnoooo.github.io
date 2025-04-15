@@ -5,29 +5,32 @@ class Dithers {
     this.data = []
     this.cluster_centers = []
     this.colors = [
-      new THREE.Color(0xffaa), // Red
-      new THREE.Color(0xaaffaa),  // Green
-      new THREE.Color(0xaaff), // Blue
-      new THREE.Color(0xffffaa),  // Yellow
-      new THREE.Color(0xffaaff),  // Purple
-      new THREE.Color(0xaaffff),  // Cyan
-      new THREE.Color(0xff88aa),  // Orange
+      new THREE.Color(0xffdd), // Red
+      new THREE.Color(0xddffdd),  // Green
+      new THREE.Color(0xddff), // Blue
+      new THREE.Color(0xffffdd),  // Yellow
+      new THREE.Color(0xffddff),  // Purple
+      new THREE.Color(0xddffff),  // Cyan
+      new THREE.Color(0xff88dd),  // Orange
       new THREE.Color(0x8888ff)    // Light Blue
     ];
     // this.cb = callback
   }
 
   load() {
-    console.log('loading data');
+    // console.log('loading data');
     // load JSON file
     fetch(this.url)
       .then(response => response.json())
       .then(data => {
+        // console.log(data);
         this.data = this.enhance_data(data);
         this.data = this.assign_height_count(this.data);
-        console.log(this.data);
+        // console.log(this.data);
+        this.data = this.data.sort((a, b) => a.og_index - b.og_index);
+        // console.log(data);
         this.cluster_centers = this.get_cluster_centers();
-        console.log(this.cluster_centers);
+        // console.log(this.cluster_centers);
       });
   }
 
@@ -37,7 +40,9 @@ class Dithers {
       const obj = data[i];
       const x = Math.floor(obj.x);
       const y = Math.floor(obj.y);
-      // remove "/Users/ya/Documents/WEB/Yyyyaaaannnnoooo.github.io/dither-archive/" from image_path
+      const index = obj.image_path.match(/dither-(\d+)\.jpg/);
+      // console.log(index[1]);
+      // remove "/Users/ya/Documents/WEB/Yyyyddaannnnoooo.github.io/dither-archive/" from image_path
       const url = obj.image_path.replace('/Users/ya/Documents/WEB/Yyyyaaaannnnoooo.github.io/dither-archive/', '');
       // const normal_url = normal_url + obj.index + '.jpg';
       const new_obj = {
@@ -45,6 +50,8 @@ class Dithers {
         y: y,
         url: url,
         cluster: obj.cluster,
+        og_index: parseInt(index[1]),
+        saved: false,
         // normal_url: normal_url,
         loaded: false,
         mesh: null
@@ -53,6 +60,8 @@ class Dithers {
     }
     return result;
   }
+
+
 
   assign_height_count(meshData) {
     const positionCount = new Map(); // Track how many times (x, y) appears
@@ -87,8 +96,27 @@ class Dithers {
     const sum_y = ys.reduce((acc, num) => acc + num, 0);
     const avg_x = sum_x / xs.length;
     const avg_y = sum_y / ys.length;
-    return { x: Math.floor(avg_x), y: Math.floor(avg_y)}
+    return { x: Math.floor(avg_x), y: Math.floor(avg_y) }
   }
+
+  save_dither(index) {
+    // console.log(index);
+    const result = this.data.filter(item => item.og_index === parseInt(index))[0]
+    result.saved = true
+    console.log(result);
+  }
+
+  get_saved_dithers_count() {
+    const result = this.data.filter(item => item.saved === true)
+    return result.length
+  }
+
+  get_neighbours(arr) {
+    // Filter objects where og_index is in the validIndices 
+    const result = this.data.filter(obj => arr.includes(obj.og_index));
+    return result.sort((a, b) => a.og_index - b.og_index)
+  }
+
 }
 
 export { Dithers };
