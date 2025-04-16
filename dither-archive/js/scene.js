@@ -24,6 +24,7 @@ import { NPC } from './npc.js'
 import { Dithers } from './dithers.js';
 import { DitherCubes } from './dither-cubes.js';
 import { QuestManager } from './quest-manager.js';
+import { AudioComponent } from './audio-component.js';
 let questManager = null
 
 
@@ -851,42 +852,12 @@ function init_scene() {
 }
 
 function init_audio() {
-  sound = new THREE.Audio(listener);
-  const audioLoader = new THREE.AudioLoader();
-  audioLoader.load('./audio/liminal-ambient.wav', function (buffer) {
-    sound.setBuffer(buffer);
-    sound.setLoop(true);
-    sound.setVolume(0.095); // Adjust volume
-    // sound.play();
-    console.log("audio loaded");
-    // Progress Loading
-    const audio_info = document.querySelector("#audio-info")
-    audio_info.innerHTML = ''
-    audio_info.textContent = "Loaded"
-    game_loaded.audio = true
-  });
+  console.log("init audio");
+  sound = new AudioComponent(listener, game_loaded);
+  sound.init();
 }
 
-// Function to pause/resume audio
-function handleAudio() {
-  if (document.hidden || !document.hasFocus()) {
-    if (sound_paused === false) sound.pause(); // Pause when tab is hidden or user switches apps
-  } else {
-    if (sound_paused === false) sound.play(); // Resume when user returns
-  }
-}
 
-// Detect when user switches tabs
-document.addEventListener("visibilitychange", handleAudio);
-
-// Detect when user switches to another app
-window.addEventListener("blur", handleAudio);
-window.addEventListener("focus", handleAudio);
-
-document.querySelector("#volume-slider").addEventListener("input", function (event) {
-  const volume = event.target.value;
-  sound.setVolume(volume / 100);
-});
 
 
 
@@ -955,19 +926,24 @@ function init_first_person_controls() {
     instructions.style.display = 'none';
     blocker.style.display = 'none';
 
-    setTimeout(() => {
-      sound.play();
-      sound_paused = false
-    }, 200);
+    // setTimeout(() => {
+    //   sound.play();
+    //   sound_paused = false
+    // }, 200);
+
+    sound.play();
+
   });
 
   controls.addEventListener('unlock', function () {
     blocker.style.display = 'flex';
     instructions.style.display = '';
-    setTimeout(() => {
-      sound.pause();
-      sound_paused = true
-    }, 200);
+    // setTimeout(() => {
+    //   sound.pause();
+    //   sound_paused = true
+    // }, 200);
+
+    sound.pause();
 
   });
 
