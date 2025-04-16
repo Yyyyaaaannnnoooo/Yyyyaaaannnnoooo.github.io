@@ -5,12 +5,15 @@
   font-style: normal;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   padding: 0;
   background-color: #000;
   font-family: 'pix', serif;
-
 }
 
 canvas {
@@ -26,6 +29,27 @@ canvas {
   z-index: -1;
   /* width: 100%; */
   /* height: 100vh; */
+}
+
+.splash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100vh;
+  background-color: white;
+  /* center its content */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* mix-blend-mode: exclusion; */
+}
+
+.splash h1,
+.splash h2 {
+  /* text-shadow: #efefef 3px 3px 3px; */
 }
 
 #blocker {
@@ -56,7 +80,7 @@ canvas {
   cursor: pointer;
 }
 
-.quest-info{
+.quest-info {
   width: 50%;
 }
 
@@ -120,7 +144,7 @@ canvas {
   left: 25px;
   /* this is a button and needs some buttony css */
   cursor: pointer;
-  background-color: ghostwhite ;
+  background-color: ghostwhite;
   /* border: 1px solid black; */
   /* border should be slightly round */
   border-radius: 5px;

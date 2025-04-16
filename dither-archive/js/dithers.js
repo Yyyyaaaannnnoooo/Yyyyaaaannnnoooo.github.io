@@ -15,13 +15,14 @@ class Dithers {
       new THREE.Color(0x8888ff)    // Light Blue
     ];
     // this.cb = callback
+    this.loaded = false;
   }
 
   load() {
     // console.log('loading data');
     // load JSON file
     fetch(this.url)
-      .then(response => response.json())
+    .then(response => response.json())
       .then(data => {
         // console.log(data);
         this.data = this.enhance_data(data);
@@ -31,6 +32,7 @@ class Dithers {
         // console.log(data);
         this.cluster_centers = this.get_cluster_centers();
         // console.log(this.cluster_centers);
+        this.loaded = true;
       });
   }
 

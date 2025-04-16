@@ -30,7 +30,12 @@ let questManager = null
 // Create Player Instance
 let player = null
 
-
+const game_loaded = {
+  dithers: false,
+  scene: false,
+  npcs: false,
+  audio: false,
+}
 // const npcs = []
 let npcs = null
 let npcs_loaded = false
@@ -43,6 +48,8 @@ document.body.appendChild(stats.dom);
 const canvas = document.querySelector('#c');
 let camera, scene, renderer, controls, face, model_height;
 let sound, listener, gui, mixer, actions, activeAction, previousAction, clock;
+let sound_paused = true;
+let sound_playing = false;
 
 const api = { state: 'Idle' };
 // let texture, material
@@ -145,7 +152,35 @@ for (let i = 0; i < NUM_IMAGES; i += 14) {
   }
   old_neighbours.push(tmp)
 }
-console.log(old_neighbours);
+const loader_symbols = ["/", "-", "\\", "|"];
+let loader_count = 0;
+const update_loaders = setInterval(() => {
+  const loaders = document.querySelectorAll(".loader")
+  const symbol = loader_symbols[loader_count];
+  loaders.forEach(loader => loader.textContent = symbol)
+  loader_count++;
+  if (loader_count >= loader_symbols.length) {
+    loader_count = 0
+  }
+}, 50)
+
+const game_loader = setInterval(() => {
+  if (check_game_loaded()) {
+    console.log("🪼 GAME LOADED");
+    clearInterval(game_loader)
+    // remove splash screen
+    // this could also become to add a button to start the game
+    // and show a bit of text explaining the game
+    const splash = document.querySelector(".splash")
+    splash.style.display = "none"
+  }
+}, 50)
+
+function check_game_loaded() {
+  return Object.values(game_loaded).every(item => item === true)
+}
+
+
 
 // function that takes an index as input and return the neighbours
 function get_neighbours(index) {
@@ -166,10 +201,6 @@ function get_neighbours(index) {
   console.log('index not found in old_neighbours');
   return null
 }
-
-console.log(get_neighbours(0))
-
-console.log(get_neighbours(NUM_IMAGES - 1))
 
 
 function getNeighbouringNumbers(num) {
@@ -198,26 +229,32 @@ btn.addEventListener('click', () => {
   renderer.domElement.requestPointerLock();
 });
 
+
+
 const dithers = new Dithers()
 dithers.load();
 
-setTimeout(() => {
-  console.log('start initializing stuff');
-  init()
-}, 2000)
+const check_dither_loading = setInterval(() => {
+  if (dithers.loaded === true) {
+    console.log("✅ dithers are loaded");
+    clearInterval(check_dither_loading);
+    // PROGRES LOADING SEQUENCE
+    const dither_info = document.querySelector("#dither-info")
+    dither_info.innerHTML = ''
+    dither_info.textContent = "Loaded"
+    game_loaded.dithers = true
+    init()
+  }
+})
+
 
 const save = document.querySelector(".save")
 // save.removeEventListener('click', save_image)
 save.addEventListener("click", save_image)
 
-// dithers.load()
 
 
 function onWindowResize() {
-  // camera.aspect = window.innerWidth / window.innerHeight;
-  // camera.updateProjectionMatrix();
-  // renderer.setSize(window.innerWidth, window.innerHeight);
-
   const width = window.innerWidth;
   const height = window.innerHeight;
   renderer.setSize(width, height);
@@ -239,18 +276,32 @@ canvas.addEventListener("click", (event) => {
 });
 
 function init() {
-  console.log('init');
+  // console.log('init');
   init_scene();
   init_renderer();
-  // init_post_process();
+  // Load and play background music
+  init_audio();
   build_terrain();
   clock = new THREE.Clock();
+  add_sun();
+  init_first_person_controls();
+  init_3d_models();
+  init_world_landmarks()
+  window.addEventListener('resize', onWindowResize);
+  window.dithers = dithers
+
+  // Progress Loading
+  const scene_info = document.querySelector("#scene-info")
+  scene_info.innerHTML = ''
+  scene_info.textContent = "Loaded"
+  game_loaded.scene = true
+  // init_map_controls();
+  // init_post_process();
   // gr = new GodRays(scene, renderer);
   // gr.init_post_process();
   // data_mosh = new DataMosh(renderer, scene, camera)
   // data_mosh.load()
   // make_water();
-  add_sun();
   // add_spotligt();
   // add_pointlight();
   // skybox();
@@ -270,35 +321,16 @@ function init() {
     update_debug_pos();
     scene.add(debug_mesh);
   }
-  // init_map_controls();
-  init_first_person_controls();
-  init_3d_models();
-  init_world_landmarks()
-  window.addEventListener('resize', onWindowResize);
-  window.dithers = dithers
   // player.show_debug(scene)
 }
 
 function animate(timestamp) {
   requestAnimationFrame(animate);
-  if (water !== undefined) water.material.uniforms['time'].value += 1.0 / (60.0 * 10);
-  // if (terrain !== undefined) terrain.material.uniforms['time'].value += 1.0 / (60.0 * 10);
-  // updateSun();
-  if (tween != null) tween.update();
-
   first_person_camera_animation();
   if (debug) update_debug_pos();
   stats.update(); // Update FPS counter
   updateCameraHeight();
   check_object_in_crosshair();
-  // check_distance_with_npcs();
-  // update_spotlight();
-  // update_pointlight();
-  // const delta = clock.getDelta();
-  // if (mixer) mixer.update(delta);
-  // if (npc) {
-  //   npc.update()
-  // }
   if (npcs_loaded) {
     update_npcs_animations();
     for (let i = 0; i < dithers.cluster_centers.length; i++) {
@@ -310,12 +342,24 @@ function animate(timestamp) {
     render();
   }
 
+  // if (water !== undefined) water.material.uniforms['time'].value += 1.0 / (60.0 * 10);
+  // if (terrain !== undefined) terrain.material.uniforms['time'].value += 1.0 / (60.0 * 10);
+  // updateSun();
+  // if (tween != null) tween.update();
+
+  // check_distance_with_npcs();
+  // update_spotlight();
+  // update_pointlight();
+  // const delta = clock.getDelta();
+  // if (mixer) mixer.update(delta);
+  // if (npc) {
+  //   npc.update()
+  // }
+
   // update_sun_position()
 
   // sunLight.position.x = camera.position.x
   // sunLight.position.z = camera.position.z
-
-
 }
 
 function render() {
@@ -325,7 +369,6 @@ function render() {
       gr.render_postProcess(camera);
     } else {
       renderer.render(scene, camera);
-
     }
     // gr.render_postProcess(camera);
     // data_mosh.render(camera, scene, renderer)
@@ -582,6 +625,7 @@ function unload_meshes() {
 function ___CAMERA_STUFF() { }
 
 function first_person_camera_animation() {
+  // THIS COULD BE MOVED WITHIN KEYBOARD COMMANDS
   const time = performance.now();
   if (controls.isLocked === true) {
     raycaster.ray.origin.copy(camera.position);
@@ -803,33 +847,32 @@ function init_scene() {
   listener = new THREE.AudioListener();
   camera.add(listener);
 
-  // Load and play background music
+
+}
+
+function init_audio() {
   sound = new THREE.Audio(listener);
   const audioLoader = new THREE.AudioLoader();
   audioLoader.load('./audio/liminal-ambient.wav', function (buffer) {
     sound.setBuffer(buffer);
     sound.setLoop(true);
     sound.setVolume(0.095); // Adjust volume
-    sound.play();
+    // sound.play();
     console.log("audio loaded");
+    // Progress Loading
+    const audio_info = document.querySelector("#audio-info")
+    audio_info.innerHTML = ''
+    audio_info.textContent = "Loaded"
+    game_loaded.audio = true
   });
 }
-
-// // Pause/Resume audio when tab loses/gains focus
-// document.addEventListener("visibilitychange", function () {
-//   if (document.visibilityState === "hidden") {
-//     sound.pause(); // Pause when tab is not in focus
-//   } else {
-//     sound.play(); // Resume when tab is in focus
-//   }
-// });
 
 // Function to pause/resume audio
 function handleAudio() {
   if (document.hidden || !document.hasFocus()) {
-    sound.pause(); // Pause when tab is hidden or user switches apps
+    if (sound_paused === false) sound.pause(); // Pause when tab is hidden or user switches apps
   } else {
-    sound.play(); // Resume when user returns
+    if (sound_paused === false) sound.play(); // Resume when user returns
   }
 }
 
@@ -843,7 +886,6 @@ window.addEventListener("focus", handleAudio);
 document.querySelector("#volume-slider").addEventListener("input", function (event) {
   const volume = event.target.value;
   sound.setVolume(volume / 100);
-  // console.log("Volume set to: " + volume);
 });
 
 
@@ -889,8 +931,8 @@ function init_world_landmarks() {
     scene.add(landmark);
     obj.mesh = landmark;
   }
-  init_quests(landmarks)
   window.landmarks = landmarks
+  init_quests(landmarks)
 }
 
 
@@ -912,20 +954,28 @@ function init_first_person_controls() {
   controls.addEventListener('lock', function () {
     instructions.style.display = 'none';
     blocker.style.display = 'none';
+
+    setTimeout(() => {
+      sound.play();
+      sound_paused = false
+    }, 200);
   });
 
   controls.addEventListener('unlock', function () {
     blocker.style.display = 'flex';
     instructions.style.display = '';
+    setTimeout(() => {
+      sound.pause();
+      sound_paused = true
+    }, 200);
+
   });
 
   const onKeyDown = function (event) {
     const meshes_to_load = get_closest_meshes(NUM_OF_MESHES_TO_LOAD);
-    // const meshes_to_load = get_meshes_within_radius(RADIUS);
     basic_texture_load(meshes_to_load);
     unload_meshes();
     player.check_location()
-
     switch (event.code) {
       case 'ArrowUp':
       case 'KeyW':
@@ -1085,7 +1135,7 @@ function show_dither() {
         Y: ${pos_y} <br>
         in the Dither Archive.
         `;
-        direction.style.cursor = "progress";
+          direction.style.cursor = "progress";
           direction.innerHTML = look_for;
           text_container.appendChild(direction);
           direction.addEventListener('click', () => {
@@ -1584,6 +1634,7 @@ function ___QUESTS_STUFF() { }
 
 function ___NPC_STUFF() { }
 
+// DEPRECATED
 function init_npcs(x, y) {
   const closest = get_closest_meshes(1)[0]
   const placement = get_mesh_placement(x, y);
@@ -1984,9 +2035,16 @@ function init_quests(landmarks) {
 
   // Check loading status periodically
   const checkLoadedInterval = setInterval(() => {
-    if (areAllNPCsLoaded()) {
+    if (are_all_npcs_loaded()) {
       console.log("✅ All NPCs are loaded!");
       clearInterval(checkLoadedInterval); // Stop checking once they are loaded
+      // PROGRESS LOADING!!
+
+      // Progress Loading
+      const npcs_info = document.querySelector("#npcs-info")
+      npcs_info.innerHTML = ''
+      npcs_info.textContent = "Loaded"
+      game_loaded.npcs = true;
       npcs_loaded = true
       player = new Player('~~~~')
       questManager = new QuestManager(npcs, player)
@@ -1999,11 +2057,8 @@ function init_quests(landmarks) {
 
 }
 
-function areAllNPCsLoaded() {
+function are_all_npcs_loaded() {
   return Object.keys(npcs).length > 0 && Object.values(npcs).every(npc => {
-    // const npc = npcs[key]
-    // console.log(npc.loaded);
-    // console.log(ke);
     return npc.loaded === true
   });
 }
