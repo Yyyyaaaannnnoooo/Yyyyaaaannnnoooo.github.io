@@ -66,7 +66,7 @@ class QuestManager {
     this.current_quest = this.quest_list[this.quests_progress]
     
     this.html_name = document.querySelector(".quest-name");
-    console.log(this.html_name);
+    // console.log(this.html_name);
     this.html_description = document.querySelector(".quest-text");
     this.activateQuest(this.current_quest)
 
@@ -95,7 +95,7 @@ class QuestManager {
     this.html_name.appendChild(p);
     // calculate completion progress of quest
     let completion = this.quests[questId].objectives.filter(o => o.completed).length;
-    console.log(completion);
+    // console.log(completion);
     let total = this.quests[questId].objectives.length;
     let progress = Math.floor((completion / total) * 100);
     let p2 = document.createElement("p");

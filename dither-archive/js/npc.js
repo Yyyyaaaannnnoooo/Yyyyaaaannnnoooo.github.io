@@ -77,7 +77,7 @@ class NPC {
       return;
     }
     const filtered = voices.filter(item => item.lang.includes('en'))
-    console.log(filtered);
+    // console.log(filtered);
     // add a filter that finds whispering voices
     const deep_filtering = filtered.filter(item => item.name.startsWith(this.voice))
     this.synth_voice = deep_filtering[0]
