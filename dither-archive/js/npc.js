@@ -32,8 +32,8 @@ class NPC {
     this.debug = null
     this.box
     this.center
-
-
+    this.spot_light = null;
+    this.spot_light_target = new THREE.Object3D();
     this.frustum = new THREE.Frustum();
     this.cameraViewProjectionMatrix = new THREE.Matrix4();
 
@@ -83,6 +83,34 @@ class NPC {
     this.synth_voice = deep_filtering[0]
   }
 
+  set_spot_light() {
+    this.spot_light = new THREE.SpotLight(0xffffff,  100);
+    // this.spot_light.position.set(2.5, 5, 2.5);
+    this.spot_light.angle = Math.PI / 6;
+    this.spot_light.penumbra = 1;
+    this.spot_light.decay = 1;
+    this.spot_light.distance = 6;
+
+    this.spot_light.castShadow = true;
+    this.spot_light.shadow.mapSize.width = 1024;
+    this.spot_light.shadow.mapSize.height = 1024;
+    this.spot_light.shadow.camera.near = 0.5;
+    this.spot_light.shadow.camera.far = 10000;
+    this.spot_light.shadow.focus = 1;
+    this.spot_light.shadow.camera.updateProjectionMatrix()
+
+    // add light on top of npc
+    this.spot_light.position.x = this.model.position.x;
+    this.spot_light.position.y = this.model.position.y + 5;
+    this.spot_light.position.z = this.model.position.z;
+
+    this.spot_light_target.position.set(this.model.position.x, this.model.position.y, this.model.position.z);
+    // this.scene.add(this.spot_light_target);
+    this.spot_light.target = this.spot_light_target;
+    this.scene.add(this.spot_light.target);
+    this.scene.add(this.spot_light);
+  }
+
   load() {
     const loader = new FBXLoader();
     loader.load(this.fbx_path, (object) => {
@@ -102,6 +130,15 @@ class NPC {
       this.set_quaternion(this.quat);
       this.model.rotation.y += -Math.PI / 1.5;
       this.scene.add(this.model);
+
+
+      // this.set_spot_light()
+
+      // this.spot_light.lookAt(this.model.position);
+      // this.scene.add(this.spot_light)
+      // const helper = new THREE.SpotLightHelper(this.spot_light);
+      // this.scene.add(helper);
+
       const anim_arr = Object.keys(this.fbx_animations);
       let i = 0;
       anim_arr.forEach(key => {
@@ -303,8 +340,8 @@ class NPC {
     this.synth.cancel();
     const utterThis = new SpeechSynthesisUtterance(txt);
     utterThis.voice = this.synth_voice;
-    utterThis.pitch = 2.75;
-    utterThis.rate = 0.9;
+    utterThis.pitch = 1.0;
+    utterThis.rate = 1;
     this.synth.speak(utterThis);
   }
 

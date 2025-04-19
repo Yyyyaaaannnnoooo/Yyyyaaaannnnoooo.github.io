@@ -141,7 +141,7 @@ const loader = new FBXLoader(manager);
 const spotLight = new THREE.SpotLight(0xffffff, 2);
 const pointLight = new THREE.PointLight(0xffffff, 20);
 const spotTarget = new THREE.Object3D();
-let sunLight
+let sun_light, sun_light_target
 
 const old_neighbours = []
 
@@ -285,6 +285,7 @@ function init() {
   build_terrain();
   clock = new THREE.Clock();
   add_sun();
+  // add_godrays();
   init_first_person_controls();
   init_3d_models();
   init_world_landmarks()
@@ -298,8 +299,6 @@ function init() {
   game_loaded.scene = true
   // init_map_controls();
   // init_post_process();
-  // gr = new GodRays(scene, renderer);
-  // gr.init_post_process();
   // data_mosh = new DataMosh(renderer, scene, camera)
   // data_mosh.load()
   // make_water();
@@ -325,9 +324,17 @@ function init() {
   // player.show_debug(scene)
 }
 
+function add_godrays() {
+  gr = new GodRays(scene, renderer);
+  gr.init_post_process();
+}
+
 function animate(timestamp) {
   requestAnimationFrame(animate);
   first_person_camera_animation();
+
+  update_sun_shadow();
+
   if (debug) update_debug_pos();
   stats.update(); // Update FPS counter
   updateCameraHeight();
@@ -359,8 +366,17 @@ function animate(timestamp) {
 
   // update_sun_position()
 
-  // sunLight.position.x = camera.position.x
-  // sunLight.position.z = camera.position.z
+  // sun_light.position.x = camera.position.x
+  // sun_light.position.z = camera.position.z
+}
+
+function update_sun_shadow() {
+  sun_light_target.position.x = camera.position.x;
+  // sun_light_target.position.y = camera.position.y;
+  sun_light_target.position.z = camera.position.z;
+  sun_light.position.x = camera.position.x + 0.5;
+  // sun_light.position.y = camera.position.y;
+  sun_light.position.z = camera.position.z - 1;
 }
 
 function render() {
@@ -649,6 +665,9 @@ function first_person_camera_animation() {
     controls.moveRight(-velocity.x * delta);
     controls.moveForward(-velocity.z * delta);
     camera.position.y += (velocity.y * delta); // new behavior
+
+
+
     if (camera.position.y < 0) {
       velocity.y = 0;
       camera.position.y = 0;
@@ -773,28 +792,65 @@ function update_pointlight() {
 }
 
 function add_sun() {
-  sunLight = new THREE.DirectionalLight(0xffffff, 1.5); // Warm sun color
-  sunLight.position.set(0, 100, 0); // Position in the sky
-  sunLight.castShadow = true; // Enable shadows
+  sun_light = new THREE.DirectionalLight(0xffffff, 1.5); // Warm sun color
+  sun_light.position.set(0, 20, 0); // Position in the sky
+  sun_light.castShadow = true; // Enable shadows
 
   // Optional: Adjust shadow settings for better quality
-  sunLight.shadow.mapSize.width = 2048;
-  sunLight.shadow.mapSize.height = 2048;
-  sunLight.shadow.camera.near = 0.5;
-  sunLight.shadow.camera.far = 10000;
-  // sunLight.shadow.camera.left = -10000;
-  // sunLight.shadow.camera.right = 10000;
-  // sunLight.shadow.camera.top = 300;
-  // sunLight.shadow.camera.bottom = -300;
+  sun_light.shadow.mapSize.width = 2048 * 64;
+  sun_light.shadow.mapSize.height = 2048 * 64;
+  sun_light.shadow.camera.near = 0.5;
+  sun_light.shadow.camera.far = 500;
 
-  // sunLight.shadow.camera.left = -1;
-  // sunLight.shadow.camera.right = 1;
-  // sunLight.shadow.camera.top = 1;
-  // sunLight.shadow.camera.bottom = -1;
-  // sunLight.shadow.camera.near = 0.5;
-  // sunLight.shadow.camera.far = 50;
+  sun_light.shadow.camera.left = -25;
+  sun_light.shadow.camera.right = 25;
+  sun_light.shadow.camera.top = 25;
+  sun_light.shadow.camera.bottom = -25;
 
-  scene.add(sunLight);
+  // sun_light.shadow.camera.left = -1;
+  // sun_light.shadow.camera.right = 1;
+  // sun_light.shadow.camera.top = 1;
+  // sun_light.shadow.camera.bottom = -1;
+  // sun_light.shadow.camera.near = 0.5;
+  // sun_light.shadow.camera.far = 50;
+  sun_light.shadow.camera.updateProjectionMatrix()
+
+  sun_light_target = new THREE.Object3D();
+  sun_light_target.position.set(0, 0, 0);
+  scene.add(sun_light_target);
+  sun_light.target = sun_light_target
+
+  scene.add(sun_light);
+  // const helper = new THREE.DirectionalLightHelper(sun_light, 5);
+  // scene.add(helper);
+}
+function add_sun_lm(pos) {
+  sun_light = new THREE.DirectionalLight(0xffffff, 0.75); // Warm sun color
+  sun_light.position.set(pos.x, 20, pos.z); // Position in the sky
+  sun_light.castShadow = true; // Enable shadows
+
+  // Optional: Adjust shadow settings for better quality
+  sun_light.shadow.mapSize.width = 512 * 4;
+  sun_light.shadow.mapSize.height = 512 * 4;
+  sun_light.shadow.camera.near = 0.5;
+  sun_light.shadow.camera.far = 500;
+
+  // sun_light.shadow.camera.left = -5;
+  // sun_light.shadow.camera.right = 5;
+  // sun_light.shadow.camera.top = 300;
+  // sun_light.shadow.camera.bottom = -300;
+
+  // sun_light.shadow.camera.left = -1;
+  // sun_light.shadow.camera.right = 1;
+  // sun_light.shadow.camera.top = 1;
+  // sun_light.shadow.camera.bottom = -1;
+  // sun_light.shadow.camera.near = 0.5;
+  // sun_light.shadow.camera.far = 50;
+  sun_light.shadow.camera.updateProjectionMatrix()
+
+  scene.add(sun_light);
+  const helper = new THREE.DirectionalLightHelper(sun_light, 5);
+  scene.add(helper);
 }
 
 
@@ -898,6 +954,7 @@ function init_world_landmarks() {
     const placement = get_mesh_placement(landmark.position.x, landmark.position.z);
     landmark.position.y = placement.y;
     landmark.rotation.y = Math.PI;
+
     // landmark.quaternion.copy(placement.quat);
     scene.add(landmark);
     obj.mesh = landmark;
@@ -947,11 +1004,29 @@ function init_first_person_controls() {
 
   });
 
+  let previous_cluster = ""
   const onKeyDown = function (event) {
     const meshes_to_load = get_closest_meshes(NUM_OF_MESHES_TO_LOAD);
     basic_texture_load(meshes_to_load);
     unload_meshes();
     player.check_location()
+
+    for(let i = 0; i < landmarks.length; i++){
+      const landmark = landmarks[i]
+      const lm_pos = new THREE.Vector2(landmark.x * spacing, landmark.y * spacing);
+      const camera_pos = new THREE.Vector2(camera.position.x, camera.position.z)
+      const dist = camera_pos.distanceTo(lm_pos);
+      // console.log(dist);
+      if(dist < 50){
+
+        let current_cluster = "Cluster: " + i
+        if(previous_cluster !== current_cluster)
+          console.log("🛩️ "+current_cluster);
+          previous_cluster = current_cluster
+      }
+
+    }
+
     switch (event.code) {
       case 'ArrowUp':
       case 'KeyW':
@@ -1186,6 +1261,9 @@ function check_object_in_crosshair() {
     // change crosshair color
     if (dist < 5 && (target_mesh.name === "Cube" || target_mesh.name === "dither")) {
       crosshair.style.backgroundColor = '#3f3';
+      // if(target_mesh.name === "dither"){
+      //   console.log(target_mesh);
+      // }
     } else {
       crosshair.style.backgroundColor = '#f33';
     }
@@ -1235,6 +1313,8 @@ function check_object_in_crosshair() {
   // if (intersects.length > 0) {
   //   const target_mesh = intersects[0].object;
   // }
+
+  // DEPRECATED
   function check_mesh(target_mesh) {
     let camera_pos = new THREE.Vector2(camera.position.x, camera.position.z);
     let mesh_pos = new THREE.Vector2(target_mesh.position.x, target_mesh.position.z);
@@ -1344,29 +1424,29 @@ function build_terrain() {
   for (let i = 0; i < vertices.length; i += 3) {
     const x = vertices[i] * scale;
     const z = vertices[i + 2] * scale;
-    const height = -6 + noise.noise(x, z, 0) * heightMultiplier;
-    vertices[i + 1] = height;
-    // vertices[i + 1] = 0;
+    const height = 0 + noise.noise(x, z, 0) * heightMultiplier;
+    // vertices[i + 1] = height;
+    vertices[i + 1] = 0;
   }
   geometry.computeVertexNormals(); // Improve shading
 
-  // Apply Material (with Texture)
-  const textureLoader = new THREE.TextureLoader();
-  const terrain_texture = textureLoader.load("textures/grasslight-big.jpg");
-  terrain_texture.wrapS = THREE.RepeatWrapping;
-  terrain_texture.wrapT = THREE.RepeatWrapping;
-  terrain_texture.repeat.set(50, 50);
-  let terrainMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-    // roughness: 0.9,
-    // metalness: 0.1,
-    map: terrain_texture, // Replace with your texture
-    // displacementMap: textureLoader.load("textures/grasslight-big-nm.jpg"),
-    // displacementScale: 20,
-    wireframe: false, // Set to true to see the wireframe
-  });
+  // // Apply Material (with Texture)
+  // const textureLoader = new THREE.TextureLoader();
+  // const terrain_texture = textureLoader.load("textures/grasslight-big.jpg");
+  // terrain_texture.wrapS = THREE.RepeatWrapping;
+  // terrain_texture.wrapT = THREE.RepeatWrapping;
+  // terrain_texture.repeat.set(50, 50);
+  // let terrainMaterial = new THREE.MeshStandardMaterial({
+  //   color: 0xffffff,
+  //   // roughness: 0.9,
+  //   // metalness: 0.1,
+  //   map: terrain_texture, // Replace with your texture
+  //   // displacementMap: textureLoader.load("textures/grasslight-big-nm.jpg"),
+  //   // displacementScale: 20,
+  //   wireframe: false, // Set to true to see the wireframe
+  // });
 
-  terrainMaterial = new THREE.MeshStandardMaterial({
+  let terrainMaterial = new THREE.MeshStandardMaterial({
     color: 0xffffff,
     metalness: 0,
     roughness: 1,
@@ -1378,6 +1458,15 @@ function build_terrain() {
   terrain.receiveShadow = true;
   terrain.castShadow = true;
   scene.add(terrain);
+
+  // const terrainMaterial2 = new THREE.MeshStandardMaterial({
+  //   color: 0x000000,
+  //   wireframe: true
+  // })
+  // const terrain2 = new THREE.Mesh(geometry, terrainMaterial2)
+  // terrain2.position.y += 0.00025;
+  // scene.add(terrain2)
+
 }
 
 function make_terrain() {

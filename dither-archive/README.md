@@ -15,6 +15,8 @@
 * init sequence should include loading of soundtrack ✅
 * handling audio play and pause based on menu open and closed and between window focus ✅
 * create audio class (this could help in making fadein and out when audio is paused and resumed) ✅
-* add on screen info for task completion, change in area aka cluster
+* solve shadows not showing with directional light ✅
+* add on screen info for task completion, change in area aka cluster (should be themessages in the cosole with emojiis)
+* add some dust or pixels as sprites emulating old place
 * character animation should be loaded once...
 * move `first_person_camera_animation()` to keyboard commands
