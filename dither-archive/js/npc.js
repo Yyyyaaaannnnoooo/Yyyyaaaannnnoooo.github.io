@@ -20,12 +20,12 @@ class NPC {
     this.texture = null
     this.anim = animation || null
     this.fbx_animations = {
-      crouch: { url: 'js/3d/fbx/Crouch.fbx', clip: null },
-      yell: { url: 'js/3d/fbx/Yelling.fbx', clip: null },
-      sad: { url: 'js/3d/fbx/Sad-Idle.fbx', clip: null },
-      dle: { url: 'js/3d/fbx/Idle3.fbx', clip: null },
-      pray: { url: 'js/3d/fbx/Praying.fbx', clip: null },
-      lay: { url: 'js/3d/fbx/Laying-Idle.fbx', clip: null },
+      mutant: { url: 'js/3d/fbx/npc/Mutant-Breathing-Idle.fbx', clip: null },
+      yell: { url: 'js/3d/fbx/npc/Sleeping-Idle.fbx', clip: null },
+      hold: { url: 'js/3d/fbx/npc/Holding-Idle.fbx', clip: null },
+      // dle: { url: 'js/3d/fbx/npc/Idle3.fbx', clip: null },
+      pray: { url: 'js/3d/fbx/npc/Praying.fbx', clip: null },
+      look: { url: 'js/3d/fbx/npc/Idle-Looking.fbx', clip: null },
     }
     this.clips = {}
     this.loaded = false
@@ -120,6 +120,7 @@ class NPC {
         this.mixer.clipAction(clip).play();
       });
       const scale = 0.0075;
+      // const scale = 1;
       this.model.scale.set(scale, scale, scale);
       this.model.updateMatrixWorld(true);
       this.model.userData = { is_npc: true, npc: this };
@@ -341,7 +342,7 @@ class NPC {
     const utterThis = new SpeechSynthesisUtterance(txt);
     utterThis.voice = this.synth_voice;
     utterThis.pitch = 1.0;
-    utterThis.rate = 1;
+    utterThis.rate = 0.85;
     this.synth.speak(utterThis);
   }
 

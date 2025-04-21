@@ -56,7 +56,10 @@ class AudioComponent {
       this.handleAudio()
     });
 
-    document.querySelector("#volume-slider").addEventListener("input", (event) => {
+    const volume_slider = document.querySelector("#volume-slider")
+    console.log(volume_slider.value);
+    this.sound.setVolume(parseInt(volume_slider.value) / 100)
+    volume_slider.addEventListener("input", (event) => {
       const volume = event.target.value;
       this.sound.setVolume(volume / 100);
     });

@@ -16,7 +16,9 @@
 * handling audio play and pause based on menu open and closed and between window focus ✅
 * create audio class (this could help in making fadein and out when audio is paused and resumed) ✅
 * solve shadows not showing with directional light ✅
-* add on screen info for task completion, change in area aka cluster (should be themessages in the cosole with emojiis)
+* add on screen info for task completion, change in area aka cluster (should be themessages in the cosole with emojiis) ✅
+* optimize model loading using skeleton utils
 * add some dust or pixels as sprites emulating old place
+* add a couple of eyes observing the archive, need to load second eye
 * character animation should be loaded once...
 * move `first_person_camera_animation()` to keyboard commands

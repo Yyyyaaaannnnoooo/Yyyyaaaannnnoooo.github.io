@@ -1,6 +1,4 @@
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MapControls } from 'three/addons/controls/MapControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
@@ -10,6 +8,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js'
 // import { Tween, Easing } from 'https://unpkg.com/@tweenjs/tween.js@23.1.3/dist/tween.esm.js';
 import Stats from 'three/addons/libs/stats.module.js';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
@@ -18,19 +17,17 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
 import { GodRays } from './post-process.js'
-import { DataMosh } from './data-mosh-fx.js';
 import { NPC } from './npc.js'
-// import './helper-functions.js'
 import { Dithers } from './dithers.js';
-import { DitherCubes } from './dither-cubes.js';
 import { QuestManager } from './quest-manager.js';
 import { AudioComponent } from './audio-component.js';
+import { BannerManager } from './banner-manager.js';
 let questManager = null
-
+const banner_manager = new BannerManager()
 
 // Create Player Instance
 let player = null
-
+let eye_master = null
 const game_loaded = {
   dithers: false,
   scene: false,
@@ -128,7 +125,7 @@ const center_y = (rows - 1) / 2;
 const RADIUS = 10 * spacing;
 const NUM_OF_MESHES_TO_LOAD = 30 * spacing
 const bg_color = document.body.style;
-
+let eye_loaded = false
 let cluster_centers
 
 let npc_interaction = false
@@ -281,6 +278,7 @@ function init() {
   init_scene();
   init_renderer();
   // Load and play background music
+  eye_master = new EyeMaster(scene);
   init_audio();
   build_terrain();
   clock = new THREE.Clock();
@@ -289,6 +287,7 @@ function init() {
   init_first_person_controls();
   init_3d_models();
   init_world_landmarks()
+
   window.addEventListener('resize', onWindowResize);
   window.dithers = dithers
 
@@ -339,6 +338,21 @@ function animate(timestamp) {
   stats.update(); // Update FPS counter
   updateCameraHeight();
   check_object_in_crosshair();
+  if (eye_master.loaded) {
+    eye_master.look_at(camera)
+    eye_master.set_position(camera)
+    // dummy.position.copy(eye_master.group.position);
+    // dummy.lookAt(p);
+    // eye_master.group.quaternion.copy(dummy.quaternion);
+    // const dummy2 = new THREE.Object3D();
+    // dummy2.position.copy(eye_master.left_eye.position);
+    // dummy2.lookAt(p);
+    // // console.log(dummy2.rotation);
+    // // eye_master.left_eye.rotation.y = -dummy2.rotation.y
+    // // eye_master.right_eye.rotation.y = -dummy2.rotation.y
+    // eye_master.left_eye.rotation.x = dummy2.rotation.x + Math.PI / 6
+    // eye_master.right_eye.rotation.x = dummy2.rotation.x + Math.PI / 6
+  }
   if (npcs_loaded) {
     update_npcs_animations();
     for (let i = 0; i < dithers.cluster_centers.length; i++) {
@@ -562,6 +576,8 @@ function basic_texture_load(list) {
           }
           dither_img.material = new THREE.MeshStandardMaterial({
             map: texture_dither,
+            metalness: 0,
+            roughness: 0,
           });
         });
 
@@ -1011,18 +1027,20 @@ function init_first_person_controls() {
     unload_meshes();
     player.check_location()
 
-    for(let i = 0; i < landmarks.length; i++){
+    for (let i = 0; i < landmarks.length; i++) {
       const landmark = landmarks[i]
       const lm_pos = new THREE.Vector2(landmark.x * spacing, landmark.y * spacing);
       const camera_pos = new THREE.Vector2(camera.position.x, camera.position.z)
       const dist = camera_pos.distanceTo(lm_pos);
       // console.log(dist);
-      if(dist < 50){
+      if (dist < 50) {
 
-        let current_cluster = "Cluster: " + i
-        if(previous_cluster !== current_cluster)
-          console.log("🛩️ "+current_cluster);
-          previous_cluster = current_cluster
+        let current_cluster = "Archive Cluster: " + i
+        if (previous_cluster !== current_cluster) {
+          console.log("🛩️ " + current_cluster);
+          banner_manager.set_banner(current_cluster)
+          previous_cluster = current_cluster;
+        }
       }
 
     }
@@ -1717,7 +1735,7 @@ function init_npc(x, y) {
   const placement = get_mesh_placement(pos_x, pos_y);
   const pos = new THREE.Vector3(pos_x, placement.y, pos_y);
   const quat = placement.quat;
-  const fbx_path = 'js/3d/fbx/Idle2.fbx';
+  const fbx_path = 'js/3d/fbx/npc/Idle.fbx';
   return { scene, fbx_path, texture_path, pos, quat }
 }
 
@@ -1783,7 +1801,7 @@ function init_quests(landmarks) {
     }, 'pray'),
     npc2: new NPC(init_npc(landmarks[1].x, landmarks[1].y), "npc2", {
       name: "The Somber Archivist",
-      voice: "Tessa",
+      voice: "Fiona",
       dialogues: {
         quest2: {
           part1: [
@@ -1840,10 +1858,10 @@ function init_quests(landmarks) {
       onDialogueExhausted: (npcId, questId) => {
         questManager.updateQuest(questId, "talk", npcId);
       }
-    }, 'lay'),
+    }, 'look'),
     npc3: new NPC(init_npc(landmarks[2].x, landmarks[2].y), "npc3", {
       name: "The Cheerful Survivor",
-      voice: "Fiona",
+      voice: "Tessa",
       dialogues: {
         quest2: {
           part1: [
@@ -1892,10 +1910,10 @@ function init_quests(landmarks) {
       onDialogueExhausted: (npcId, questId) => {
         questManager.updateQuest(questId, "talk", npcId);
       }
-    }, 'sad'),
+    }, 'mutant'),
     npc4: new NPC(init_npc(landmarks[3].x, landmarks[3].y), "npc4", {
       name: "The Agitated Heretic",
-      voice: "Bad News",
+      voice: "Grandma",
       dialogues: {
         quest2: {
           part1: [
@@ -2089,7 +2107,7 @@ function init_quests(landmarks) {
       onDialogueExhausted: (npcId, questId) => {
         questManager.updateQuest(questId, "talk", npcId);
       }
-    }, 'crouch')
+    }, 'hold')
   };
 
   Object.keys(npcs).forEach(key => {
@@ -2112,9 +2130,7 @@ function init_quests(landmarks) {
       game_loaded.npcs = true;
       npcs_loaded = true
       player = new Player('~~~~')
-      questManager = new QuestManager(npcs, player)
-      // player.show_debug(scene)
-      // questManager.activateQuest("quest1", "npc1")
+      questManager = new QuestManager(npcs, player, banner_manager)
     } else {
       console.log("⏳ Waiting for NPCs to load...");
     }
@@ -2161,15 +2177,6 @@ class Player {
       quest4: { pos: new THREE.Vector2(-10, 10), name: "third dither" },
     };
     this.onLocationReached = (location, questId) => {
-      // this should be formulated as method like progress_quest with the task manager
-      // const next_objective = questManager.get_next_objective(questId)
-      // console.log(next_objective);
-      // if (next_objective.type === "talk") {
-      //   // console.log(npcs[next_objective.value]);
-      //   const npc = npcs[next_objective.value];
-      //   const part = next_objective.diag
-      //   npc.set_dialogue_part(part)
-      // }
       questManager.updateQuest(questId, "go_to", location);
     }
     this.geom = new THREE.BoxGeometry(0.5, 300, 0.5);
@@ -2177,7 +2184,6 @@ class Player {
     this.mesh = new THREE.Mesh(this.geom, this.mat)
     this.mesh.position.x = this.locations[this.currentQuest].pos.x
     this.mesh.position.z = this.locations[this.currentQuest].pos.y
-
   }
 
   show_debug(scene) {
@@ -2224,6 +2230,169 @@ class Player {
     }
   }
 
+
+}
+
+
+
+class EyeMaster {
+  constructor(scene) {
+    this.scene = scene;
+    this.left_eye = null;
+    this.right_eye = null;
+    this.group = null;
+    this.space = 1.5;
+    this.scale = 0.25;
+    this.height = 18;
+    this.distance = 23;
+    this.loaded = false;
+    const plane = new THREE.BoxGeometry(this.space * 2, this.scale, 20);
+    const mat = new THREE.MeshStandardMaterial({ color: 0x000000 })
+    this.debug = new THREE.Mesh(plane, mat);
+    this.debug.position.set(0, this.height, 0)
+    this.noise = new ImprovedNoise();
+    this.inc = 0;
+    this.step = Math.PI * 0.001;
+    this.load_eyes()
+  }
+  load_eyes() {
+    const loader = new FBXLoader();
+
+    const eye = '14'
+    loader.load('js/3d/fbx/eye/Marmoset_Scene/Assets/Meshes/Refr_Hi.fbx', (object) => {
+      this.left_eye = object;
+      // const skeleton_utils = new SkeletonUtils()
+      this.right_eye = SkeletonUtils.clone(this.left_eye);
+      // const scale = 0.0075;
+      const scale = 8;
+      const tex_scale = 1;
+      this.left_eye.scale.set(this.scale, this.scale, this.scale);
+      this.right_eye.scale.set(this.scale, this.scale, this.scale);
+      this.left_eye.updateMatrixWorld(true);
+      this.right_eye.updateMatrixWorld(true);
+      this.load_texture(this.left_eye, '14', 1)
+      this.load_texture(this.right_eye, '09', 1)
+      // this.add_texture(this.texture_path);
+      // this.set_pos(this.pos);
+      const h = 150
+      this.left_eye.position.x = this.space
+      this.left_eye.position.y = this.height
+      this.right_eye.position.x = -this.space
+      this.right_eye.position.y = this.height
+      this.group = new THREE.Group()
+      this.group.add(this.left_eye)
+      this.group.add(this.right_eye)
+      this.scene.add(this.group);
+      this.loaded = true
+    }, undefined, (error) => {
+      console.error('An error happened while loading the FBX model:', error);
+    });
+  }
+
+  load_texture(model, eye, tex_scale) {
+    const texture_loader = new THREE.TextureLoader()
+    model.traverse(child => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        child.material.dispose()
+        child.material = new THREE.MeshStandardMaterial({
+          map: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_basecolor.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          emissiveMap: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_emissive.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          normalMap: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_normal.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          aoMap: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_ambientocclusion.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          bumpMap: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_height.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          metalnessMap: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_metallic.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          roughnessMap: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_roughness.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          fog: true
+        })
+      }
+    })
+  }
+
+  look_at(camera) {
+
+    const p = camera.position
+    // const left = new THREE.Vector3(p.x + eye_master.space, p.y, p.z)
+    // const right = new THREE.Vector3(p.x - 20, p.y, p.z)
+    // eye_master.left_eye.lookAt(left)
+    // eye_master.right_eye.lookAt(right)
+    this.group.lookAt(p)
+    const dummy = new THREE.Object3D();
+    const time = performance.now() * 0.0001;
+
+    const nx = this.noise.noise(time * 5, 0, 0);
+    const ny = this.noise.noise(0, time * 5, 0);
+    let noiseX = Math.sin(time) * (3.5 * nx); // 5 units side-to-side
+    let noiseY = Math.sin(time * 1.3) * (2 * ny); // slight vertical wiggle
+    // noiseX += noise.noise(time * 0.25 * 10, 0, 0) * 5;
+    // noiseY += noise.noise(0, time * 0.25 * 10, 0) * 2;
+
+    [this.left_eye, this.right_eye].forEach((eye, i) => {
+      const worldPos = new THREE.Vector3();
+      eye.getWorldPosition(worldPos);
+
+
+      const noisyTarget = p.clone();
+      noisyTarget.x += noiseX;
+      noisyTarget.y += noiseY;
+
+      dummy.position.copy(worldPos);
+      // dummy.lookAt(p);
+      dummy.lookAt(noisyTarget);
+      const worldQuat = dummy.quaternion.clone();
+      const parentQuat = eye.parent.getWorldQuaternion(new THREE.Quaternion()).invert();
+      const localQuat = worldQuat.premultiply(parentQuat);
+
+      // Apply full localQuat temporarily
+      eye.quaternion.copy(localQuat);
+
+      // Convert to Euler to isolate x-axis
+      const euler = new THREE.Euler().setFromQuaternion(eye.quaternion, 'XYZ');
+      eye.rotation.set(euler.x, euler.y, 0); // Only allow x-axis rotation
+    });
+  }
+
+  set_position(camera) {
+    // Direction the target is facing
+    const target = new THREE.Object3D()
+    target.position.copy(camera.position);
+    const targetDir = new THREE.Vector3();
+    target.getWorldDirection(targetDir);
+
+    // Calculate position behind target
+    const time = performance.now() * 0.0001;
+    const offset = targetDir.clone().multiplyScalar(this.distance);
+    const ny = this.noise.noise(0, time * 5, 0) * Math.PI * 0.1;
+    const y = Math.sin(this.inc + ny) * 0.25
+    offset.y += (this.height + y); // apply height
+
+    const desiredPosition = target.position.clone().add(offset);
+    // this.group.position.copy(desiredPosition);
+    // this.group.position.y = offset.y;
+
+
+    const targetPos = target.position.clone();
+    const center = new THREE.Vector3(0, 0, 0);
+    const maxDistance = this.distance;
+
+    // Vector from target to center
+    const direction = center.clone().sub(targetPos);
+    const distanceToCenter = direction.length();
+    direction.normalize();
+
+    // Use min to prevent overshooting the center
+    const eyeOffset = Math.min(maxDistance, distanceToCenter * 0.999); // slightly less to avoid precision issues
+    const eyePos = targetPos.clone().add(direction.multiplyScalar(eyeOffset));
+    eyePos.y += (this.height + y);
+
+    this.group.position.copy(eyePos);
+
+    this.inc += this.step;
+    if (this.inc >= Math.PI * 2) {
+      this.inc = 0;
+    }
+  }
 
 }
 
