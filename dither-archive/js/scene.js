@@ -22,6 +22,7 @@ import { Dithers } from './dithers.js';
 import { QuestManager } from './quest-manager.js';
 import { AudioComponent } from './audio-component.js';
 import { BannerManager } from './banner-manager.js';
+import { Player } from './player.js';
 let questManager = null
 const banner_manager = new BannerManager()
 
@@ -453,10 +454,14 @@ function set_background(position) {
   const c = { h: 0, s: 0, l: 0 }
   const v = blendedColor.getHSL(c)
   // console.log(v);
-  const col = 0.5 * v.l;
+  const col = 0.25 * v.l;
   const bg_color = new THREE.Color(col, col, col)
+  bg_color.setHSL(v.h, 0.11, 0.75);
   // gr.set_color(bg_color)
   if (scene.fog) scene.fog.color = bg_color;
+  const floor_color = new THREE.Color()
+  floor_color.setHSL(1-v.h, 0.11, 0.85)
+  terrain.material.color = floor_color
   scene.background = bg_color;
 }
 
@@ -1025,7 +1030,7 @@ function init_first_person_controls() {
     const meshes_to_load = get_closest_meshes(NUM_OF_MESHES_TO_LOAD);
     basic_texture_load(meshes_to_load);
     unload_meshes();
-    player.check_location()
+    player.check_location(camera)
 
     for (let i = 0; i < landmarks.length; i++) {
       const landmark = landmarks[i]
@@ -2166,72 +2171,7 @@ function remove_npcs_dialogues() {
 
 
 
-class Player {
-  // he also requires some quest like things
-  constructor(name) {
-    this.name = name;
-    this.currentQuest = "quest1"; // Starts with quest 1\
-    this.locations = {
-      quest1: { pos: new THREE.Vector2(10, 10), name: "first dither" },
-      quest3: { pos: new THREE.Vector2(10, -10), name: "second dither" },
-      quest4: { pos: new THREE.Vector2(-10, 10), name: "third dither" },
-    };
-    this.onLocationReached = (location, questId) => {
-      questManager.updateQuest(questId, "go_to", location);
-    }
-    this.geom = new THREE.BoxGeometry(0.5, 300, 0.5);
-    this.mat = new THREE.MeshBasicMaterial();
-    this.mesh = new THREE.Mesh(this.geom, this.mat)
-    this.mesh.position.x = this.locations[this.currentQuest].pos.x
-    this.mesh.position.z = this.locations[this.currentQuest].pos.y
-  }
 
-  show_debug(scene) {
-    scene.add(this.mesh)
-  }
-
-  set_current_quest(questId) {
-    this.currentQuest = questId
-  }
-
-  update_debug_position() {
-    this.mesh.position.x = this.locations[this.currentQuest].pos.x
-    this.mesh.position.z = this.locations[this.currentQuest].pos.y
-  }
-
-  talkTo(npc) {
-    if (npc) {
-      console.log(`talking to npc: ${npc.name}`);
-      npc.talk(this.currentQuest);
-    }
-  }
-
-  updateQuestProgress(questId) {
-    // Check if any new quests have started
-    this.currentQuest = questId; // Set active quest
-    if (!this.locations[this.currentQuest]) return
-    this.update_debug_position()
-    // console.log(questManager.activeQuests);
-    // questManager.activeQuests.forEach(questId => {
-    //   // console.log(object);
-    // });
-  }
-
-  check_location() {
-    if (!this.locations[this.currentQuest]) return
-    const pos = this.locations[this.currentQuest].pos;
-    // console.log(pos);
-    const player_pos = new THREE.Vector2(camera.position.x, camera.position.z);
-    const dist = player_pos.distanceTo(pos);
-    // console.log(dist);
-    if (dist < 3) {
-      console.log('location reached');
-      this.onLocationReached(this.locations[this.currentQuest].name, this.currentQuest)
-    }
-  }
-
-
-}
 
 
 
@@ -2323,8 +2263,8 @@ class EyeMaster {
 
     const nx = this.noise.noise(time * 5, 0, 0);
     const ny = this.noise.noise(0, time * 5, 0);
-    let noiseX = Math.sin(time) * (3.5 * nx); // 5 units side-to-side
-    let noiseY = Math.sin(time * 1.3) * (2 * ny); // slight vertical wiggle
+    let noiseX = Math.sin(time) * (7 * nx); // 5 units side-to-side
+    let noiseY = Math.sin(time * 1.3) * (4 * ny); // slight vertical wiggle
     // noiseX += noise.noise(time * 0.25 * 10, 0, 0) * 5;
     // noiseY += noise.noise(0, time * 0.25 * 10, 0) * 2;
 
@@ -2384,7 +2324,8 @@ class EyeMaster {
     // Use min to prevent overshooting the center
     const eyeOffset = Math.min(maxDistance, distanceToCenter * 0.999); // slightly less to avoid precision issues
     const eyePos = targetPos.clone().add(direction.multiplyScalar(eyeOffset));
-    eyePos.y += (this.height + y);
+    eyePos.y += (this.height);
+    eyePos.x += (y);
 
     this.group.position.copy(eyePos);
 

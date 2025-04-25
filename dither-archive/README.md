@@ -19,6 +19,9 @@
 * add on screen info for task completion, change in area aka cluster (should be themessages in the cosole with emojiis) ✅
 * optimize model loading using skeleton utils
 * add some dust or pixels as sprites emulating old place
-* add a couple of eyes observing the archive, need to load second eye
+* add a couple of eyes observing the archive, need to load second eye ✅
+* make camera an object inside player
+* make entrap game for the dithering values...
+* create lore for the eyes OR maybe not...
 * character animation should be loaded once...
 * move `first_person_camera_animation()` to keyboard commands

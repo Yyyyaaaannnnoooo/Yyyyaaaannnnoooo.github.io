@@ -21,7 +21,7 @@ class NPC {
     this.anim = animation || null
     this.fbx_animations = {
       mutant: { url: 'js/3d/fbx/npc/Mutant-Breathing-Idle.fbx', clip: null },
-      yell: { url: 'js/3d/fbx/npc/Sleeping-Idle.fbx', clip: null },
+      yell: { url: 'js/3d/fbx/npc/Defeated.fbx', clip: null },
       hold: { url: 'js/3d/fbx/npc/Holding-Idle.fbx', clip: null },
       // dle: { url: 'js/3d/fbx/npc/Idle3.fbx', clip: null },
       pray: { url: 'js/3d/fbx/npc/Praying.fbx', clip: null },
