@@ -1,92 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>aAToCT:tLoED</title>
+    <link rel="stylesheet" href="style.css" />
+    <style></style>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PToDS</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-
-  </style>
-</head>
-
-<body>
-  <canvas id="c"></canvas>
-  <div id="blocker">
-    <div id="instructions">
-      <h1 style="color: crimson;">
-        An Archive Theory of Clustering Tiranny
-      </h1>
-      <h2 style="color: royalblue;">
-        The Lore of Error Diffusion
-      </h2>
-      <p style="font-size:36px">
-        Click to play
-      </p>
-      <p>
-        Move: W A S D or ⬅️ ⬆️ ➡️ ⬇️<br />
-        Look: MOUSE<br />
-        Menu: esc
-      </p>
-    </div>
-    <div class="quest-info">
-      <div class="main-quest">
-
-      </div>
-      <div class="curr-quest">
-        <div class="quest-name">
-          <p>Quest Name</p>
-        </div>
-        <div class="quest-text">
-          <p>Quest text goes here</p>
-        </div>
-      </div>
-      <br>
-      <!-- volume slider for sound -->
-      <div class="volume">
-        <p>Sound Volume</p>
-        <input type="range" min="0" max="50" step="0.5" value="10" class="slider" id="volume-slider">
+  <body>
+    <canvas id="c"></canvas>
+    <div class="banner">
+      <div class="banner-item">
+        <!-- <h1>~%~%~%~%~%~%~%~%~%~%~%~%~</h1> -->
+        <h1 class="message"></h1>
+        <!-- <h1>~%~%~%~%~%~%~%~%~%~%~%~%~</h1> -->
       </div>
     </div>
-  </div>
-  <div class="crosshair"></div>
-
-  <section class="main">
-    <div class="image"></div>
-    <div class="main-right">
-      <div class="text-container">
+    <div class="splash">
+      <div class="title">
+        <h1 style="color: crimson">An Archive Theory of Clustering Tiranny</h1>
+        <h2 style="color: royalblue">The Lore of Error Diffusion</h2>
+      </div>
+      <div class="loading-info">
         <p>
-          <i>
-            if you like the image download it by right clicking on it!
-          </i>
+          Dithers:
+          <span id="dither-info"><span class="loader"></span> Loading...</span>
         </p>
-        <p class="dither-text">
-          here comes quests related text
+        <p>
+          Scene:
+          <span id="scene-info"><span class="loader"></span> Loading...</span>
+        </p>
+        <p>
+          NPCs:
+          <span id="npcs-info"><span class="loader"></span> Loading...</span>
+        </p>
+        <p>
+          Audio:
+          <span id="audio-info"><span class="loader"></span> Loading...</span>
         </p>
       </div>
-      <div class="btn">CLOSE!</div>
-      <div class="save">SAVE</div>
     </div>
-  </section>
-  <section class="footer">
-    <p class="dialogue">
-    </p>
-  </section>
+    <div id="blocker">
+      <div id="instructions">
+        <h1 style="color: crimson">An Archive Theory of Clustering Tiranny</h1>
+        <h2 style="color: royalblue">The Lore of Error Diffusion</h2>
+        <p style="font-size: 36px">Click to play</p>
+        <p>
+          Move: W A S D or ⬅️ ⬆️ ➡️ ⬇️<br />
+          Look: MOUSE<br />
+          Menu: esc
+        </p>
+      </div>
+      <div class="quest-info">
+        <div class="main-quest"></div>
+        <div class="curr-quest">
+          <div class="quest-name">
+            <p>Quest Name</p>
+          </div>
+          <div class="quest-text">
+            <p>Quest text goes here</p>
+          </div>
+        </div>
+        <br />
+        <!-- volume slider for sound -->
+        <div class="volume">
+          <p>Sound Volume</p>
+          <input
+            type="range"
+            min="0"
+            max="50"
+            step="0.5"
+            value="10"
+            class="slider"
+            id="volume-slider"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="crosshair"></div>
 
-  <script>
+    <section class="main">
+      <div class="image"></div>
+      <div class="main-right">
+        <div class="text-container">
+          <p>
+            <i> if you like the image download it by right clicking on it! </i>
+          </p>
+          <p class="dither-text">here comes quests related text</p>
+        </div>
+        <div class="btn">CLOSE!</div>
+        <div class="save">SAVE</div>
+      </div>
+    </section>
+    <section class="footer">
+      <p class="dialogue"></p>
+    </section>
 
-  </script>
+    <script></script>
 
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "./js/build/three.module.js",
-        "three/addons/": "./js/jsm/"
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./js/build/three.module.js",
+          "three/addons/": "./js/jsm/"
+        }
       }
-    }
-  </script>
-  <script type="module" src="./js/scene.js"> </script>
-</body>
-
+    </script>
+    <script type="module" src="./js/scene.js"></script>
+  </body>
 </html>

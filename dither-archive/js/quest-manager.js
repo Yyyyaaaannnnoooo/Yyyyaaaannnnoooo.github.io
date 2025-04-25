@@ -1,5 +1,6 @@
 class QuestManager {
-  constructor(npcs, player) {
+  constructor(npcs, player, banner_manager) {
+    this.banner_manager = banner_manager;
     this.npcs = npcs;
     this.player = player;
     this.quests = {
@@ -64,9 +65,9 @@ class QuestManager {
     this.quests_progress = 0;
     this.activeQuests = new Set();
     this.current_quest = this.quest_list[this.quests_progress]
-    
+
     this.html_name = document.querySelector(".quest-name");
-    console.log(this.html_name);
+    // console.log(this.html_name);
     this.html_description = document.querySelector(".quest-text");
     this.activateQuest(this.current_quest)
 
@@ -95,7 +96,7 @@ class QuestManager {
     this.html_name.appendChild(p);
     // calculate completion progress of quest
     let completion = this.quests[questId].objectives.filter(o => o.completed).length;
-    console.log(completion);
+    // console.log(completion);
     let total = this.quests[questId].objectives.length;
     let progress = Math.floor((completion / total) * 100);
     let p2 = document.createElement("p");
@@ -105,9 +106,9 @@ class QuestManager {
     this.quests[questId].objectives.forEach(objective => {
       let p = document.createElement("p");
       if (objective.completed) {
-        p.textContent = `🧚🏼 ${objective.type} to ${objective.value}: ${this.npcs[objective.value].name}`;
+        p.textContent = `🧚🏼 ${objective.type} to ${this.npcs[objective.value].name}`;
       } else {
-        p.textContent = `👹 ${objective.type} to ${objective.value}: ${this.npcs[objective.value].name}`;
+        p.textContent = `👹 ${objective.type} to ${this.npcs[objective.value].name}`;
       }
       this.html_description.appendChild(p);
     }
@@ -138,7 +139,7 @@ class QuestManager {
       return;
     }
 
-    
+
     let objective;
     switch (type) {
       case "talk":
@@ -148,7 +149,10 @@ class QuestManager {
           return o.type === "talk" && o.value === value
         });
         // console.log(objective);
-        console.log(`✅ Objective Completed: ${type} ${value}`);
+
+        console.log(`✅ Objective Completed: ${type} to ${this.npcs[value].name}`);
+        // this.banner_manager.set_banner(`Objective Completed: ${type} to ${this.npcs[value].name}`)
+
         objective.completed = true;
         this.update_html(questId);
         const next_objective = this.get_next_objective(questId)
@@ -178,6 +182,7 @@ class QuestManager {
     if (quest.objectives.every(o => o.completed)) {
       quest.status = "completed";
       console.log(`🎉 Quest Completed: ${quest.name}`);
+      this.banner_manager.set_banner(`Quest Completed: ${quest.name}`)
       this.deactivate_quest(questId);
       switch (questId) {
         case "quest1":

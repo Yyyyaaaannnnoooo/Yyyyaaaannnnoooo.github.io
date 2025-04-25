@@ -1,6 +1,4 @@
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MapControls } from 'three/addons/controls/MapControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
@@ -10,7 +8,8 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { Tween, Easing } from 'https://unpkg.com/@tweenjs/tween.js@23.1.3/dist/tween.esm.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js'
+// import { Tween, Easing } from 'https://unpkg.com/@tweenjs/tween.js@23.1.3/dist/tween.esm.js';
 import Stats from 'three/addons/libs/stats.module.js';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 
@@ -18,19 +17,24 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
 import { GodRays } from './post-process.js'
-import { DataMosh } from './data-mosh-fx.js';
 import { NPC } from './npc.js'
-// import './helper-functions.js'
 import { Dithers } from './dithers.js';
-import { DitherCubes } from './dither-cubes.js';
 import { QuestManager } from './quest-manager.js';
+import { AudioComponent } from './audio-component.js';
+import { BannerManager } from './banner-manager.js';
+import { Player } from './player.js';
 let questManager = null
-
+const banner_manager = new BannerManager()
 
 // Create Player Instance
 let player = null
-
-
+let eye_master = null
+const game_loaded = {
+  dithers: false,
+  scene: false,
+  npcs: false,
+  audio: false,
+}
 // const npcs = []
 let npcs = null
 let npcs_loaded = false
@@ -43,6 +47,8 @@ document.body.appendChild(stats.dom);
 const canvas = document.querySelector('#c');
 let camera, scene, renderer, controls, face, model_height;
 let sound, listener, gui, mixer, actions, activeAction, previousAction, clock;
+let sound_paused = true;
+let sound_playing = false;
 
 const api = { state: 'Idle' };
 // let texture, material
@@ -120,7 +126,7 @@ const center_y = (rows - 1) / 2;
 const RADIUS = 10 * spacing;
 const NUM_OF_MESHES_TO_LOAD = 30 * spacing
 const bg_color = document.body.style;
-
+let eye_loaded = false
 let cluster_centers
 
 let npc_interaction = false
@@ -133,7 +139,7 @@ const loader = new FBXLoader(manager);
 const spotLight = new THREE.SpotLight(0xffffff, 2);
 const pointLight = new THREE.PointLight(0xffffff, 20);
 const spotTarget = new THREE.Object3D();
-let sunLight
+let sun_light, sun_light_target
 
 const old_neighbours = []
 
@@ -145,7 +151,35 @@ for (let i = 0; i < NUM_IMAGES; i += 14) {
   }
   old_neighbours.push(tmp)
 }
-console.log(old_neighbours);
+const loader_symbols = ["/", "-", "\\", "|"];
+let loader_count = 0;
+const update_loaders = setInterval(() => {
+  const loaders = document.querySelectorAll(".loader")
+  const symbol = loader_symbols[loader_count];
+  loaders.forEach(loader => loader.textContent = symbol)
+  loader_count++;
+  if (loader_count >= loader_symbols.length) {
+    loader_count = 0
+  }
+}, 50)
+
+const game_loader = setInterval(() => {
+  if (check_game_loaded()) {
+    console.log("🪼 GAME LOADED");
+    clearInterval(game_loader)
+    // remove splash screen
+    // this could also become to add a button to start the game
+    // and show a bit of text explaining the game
+    const splash = document.querySelector(".splash")
+    splash.style.display = "none"
+  }
+}, 50)
+
+function check_game_loaded() {
+  return Object.values(game_loaded).every(item => item === true)
+}
+
+
 
 // function that takes an index as input and return the neighbours
 function get_neighbours(index) {
@@ -166,10 +200,6 @@ function get_neighbours(index) {
   console.log('index not found in old_neighbours');
   return null
 }
-
-console.log(get_neighbours(0))
-
-console.log(get_neighbours(NUM_IMAGES - 1))
 
 
 function getNeighbouringNumbers(num) {
@@ -198,26 +228,32 @@ btn.addEventListener('click', () => {
   renderer.domElement.requestPointerLock();
 });
 
+
+
 const dithers = new Dithers()
 dithers.load();
 
-setTimeout(() => {
-  console.log('start initializing stuff');
-  init()
-}, 2000)
+const check_dither_loading = setInterval(() => {
+  if (dithers.loaded === true) {
+    console.log("✅ dithers are loaded");
+    clearInterval(check_dither_loading);
+    // PROGRES LOADING SEQUENCE
+    const dither_info = document.querySelector("#dither-info")
+    dither_info.innerHTML = ''
+    dither_info.textContent = "Loaded"
+    game_loaded.dithers = true
+    init()
+  }
+})
+
 
 const save = document.querySelector(".save")
 // save.removeEventListener('click', save_image)
 save.addEventListener("click", save_image)
 
-// dithers.load()
 
 
 function onWindowResize() {
-  // camera.aspect = window.innerWidth / window.innerHeight;
-  // camera.updateProjectionMatrix();
-  // renderer.setSize(window.innerWidth, window.innerHeight);
-
   const width = window.innerWidth;
   const height = window.innerHeight;
   renderer.setSize(width, height);
@@ -239,18 +275,33 @@ canvas.addEventListener("click", (event) => {
 });
 
 function init() {
-  console.log('init');
+  // console.log('init');
   init_scene();
   init_renderer();
-  // init_post_process();
+  // Load and play background music
+  eye_master = new EyeMaster(scene);
+  init_audio();
   build_terrain();
   clock = new THREE.Clock();
-  // gr = new GodRays(scene, renderer);
-  // gr.init_post_process();
+  add_sun();
+  // add_godrays();
+  init_first_person_controls();
+  init_3d_models();
+  init_world_landmarks()
+
+  window.addEventListener('resize', onWindowResize);
+  window.dithers = dithers
+
+  // Progress Loading
+  const scene_info = document.querySelector("#scene-info")
+  scene_info.innerHTML = ''
+  scene_info.textContent = "Loaded"
+  game_loaded.scene = true
+  // init_map_controls();
+  // init_post_process();
   // data_mosh = new DataMosh(renderer, scene, camera)
   // data_mosh.load()
   // make_water();
-  add_sun();
   // add_spotligt();
   // add_pointlight();
   // skybox();
@@ -270,35 +321,39 @@ function init() {
     update_debug_pos();
     scene.add(debug_mesh);
   }
-  // init_map_controls();
-  init_first_person_controls();
-  init_3d_models();
-  init_world_landmarks()
-  window.addEventListener('resize', onWindowResize);
-  window.dithers = dithers
   // player.show_debug(scene)
+}
+
+function add_godrays() {
+  gr = new GodRays(scene, renderer);
+  gr.init_post_process();
 }
 
 function animate(timestamp) {
   requestAnimationFrame(animate);
-  if (water !== undefined) water.material.uniforms['time'].value += 1.0 / (60.0 * 10);
-  // if (terrain !== undefined) terrain.material.uniforms['time'].value += 1.0 / (60.0 * 10);
-  // updateSun();
-  if (tween != null) tween.update();
-
   first_person_camera_animation();
+
+  update_sun_shadow();
+
   if (debug) update_debug_pos();
   stats.update(); // Update FPS counter
   updateCameraHeight();
   check_object_in_crosshair();
-  // check_distance_with_npcs();
-  // update_spotlight();
-  // update_pointlight();
-  // const delta = clock.getDelta();
-  // if (mixer) mixer.update(delta);
-  // if (npc) {
-  //   npc.update()
-  // }
+  if (eye_master.loaded) {
+    eye_master.look_at(camera)
+    eye_master.set_position(camera)
+    // dummy.position.copy(eye_master.group.position);
+    // dummy.lookAt(p);
+    // eye_master.group.quaternion.copy(dummy.quaternion);
+    // const dummy2 = new THREE.Object3D();
+    // dummy2.position.copy(eye_master.left_eye.position);
+    // dummy2.lookAt(p);
+    // // console.log(dummy2.rotation);
+    // // eye_master.left_eye.rotation.y = -dummy2.rotation.y
+    // // eye_master.right_eye.rotation.y = -dummy2.rotation.y
+    // eye_master.left_eye.rotation.x = dummy2.rotation.x + Math.PI / 6
+    // eye_master.right_eye.rotation.x = dummy2.rotation.x + Math.PI / 6
+  }
   if (npcs_loaded) {
     update_npcs_animations();
     for (let i = 0; i < dithers.cluster_centers.length; i++) {
@@ -310,12 +365,33 @@ function animate(timestamp) {
     render();
   }
 
+  // if (water !== undefined) water.material.uniforms['time'].value += 1.0 / (60.0 * 10);
+  // if (terrain !== undefined) terrain.material.uniforms['time'].value += 1.0 / (60.0 * 10);
+  // updateSun();
+  // if (tween != null) tween.update();
+
+  // check_distance_with_npcs();
+  // update_spotlight();
+  // update_pointlight();
+  // const delta = clock.getDelta();
+  // if (mixer) mixer.update(delta);
+  // if (npc) {
+  //   npc.update()
+  // }
+
   // update_sun_position()
 
-  // sunLight.position.x = camera.position.x
-  // sunLight.position.z = camera.position.z
+  // sun_light.position.x = camera.position.x
+  // sun_light.position.z = camera.position.z
+}
 
-
+function update_sun_shadow() {
+  sun_light_target.position.x = camera.position.x;
+  // sun_light_target.position.y = camera.position.y;
+  sun_light_target.position.z = camera.position.z;
+  sun_light.position.x = camera.position.x + 0.5;
+  // sun_light.position.y = camera.position.y;
+  sun_light.position.z = camera.position.z - 1;
 }
 
 function render() {
@@ -325,7 +401,6 @@ function render() {
       gr.render_postProcess(camera);
     } else {
       renderer.render(scene, camera);
-
     }
     // gr.render_postProcess(camera);
     // data_mosh.render(camera, scene, renderer)
@@ -379,10 +454,14 @@ function set_background(position) {
   const c = { h: 0, s: 0, l: 0 }
   const v = blendedColor.getHSL(c)
   // console.log(v);
-  const col = 0.5 * v.l;
+  const col = 0.25 * v.l;
   const bg_color = new THREE.Color(col, col, col)
+  bg_color.setHSL(v.h, 0.11, 0.75);
   // gr.set_color(bg_color)
   if (scene.fog) scene.fog.color = bg_color;
+  const floor_color = new THREE.Color()
+  floor_color.setHSL(1-v.h, 0.11, 0.85)
+  terrain.material.color = floor_color
   scene.background = bg_color;
 }
 
@@ -502,6 +581,8 @@ function basic_texture_load(list) {
           }
           dither_img.material = new THREE.MeshStandardMaterial({
             map: texture_dither,
+            metalness: 0,
+            roughness: 0,
           });
         });
 
@@ -582,6 +663,7 @@ function unload_meshes() {
 function ___CAMERA_STUFF() { }
 
 function first_person_camera_animation() {
+  // THIS COULD BE MOVED WITHIN KEYBOARD COMMANDS
   const time = performance.now();
   if (controls.isLocked === true) {
     raycaster.ray.origin.copy(camera.position);
@@ -604,6 +686,9 @@ function first_person_camera_animation() {
     controls.moveRight(-velocity.x * delta);
     controls.moveForward(-velocity.z * delta);
     camera.position.y += (velocity.y * delta); // new behavior
+
+
+
     if (camera.position.y < 0) {
       velocity.y = 0;
       camera.position.y = 0;
@@ -728,28 +813,65 @@ function update_pointlight() {
 }
 
 function add_sun() {
-  sunLight = new THREE.DirectionalLight(0xffffff, 1.5); // Warm sun color
-  sunLight.position.set(0, 100, 0); // Position in the sky
-  sunLight.castShadow = true; // Enable shadows
+  sun_light = new THREE.DirectionalLight(0xffffff, 1.5); // Warm sun color
+  sun_light.position.set(0, 20, 0); // Position in the sky
+  sun_light.castShadow = true; // Enable shadows
 
   // Optional: Adjust shadow settings for better quality
-  sunLight.shadow.mapSize.width = 2048;
-  sunLight.shadow.mapSize.height = 2048;
-  sunLight.shadow.camera.near = 0.5;
-  sunLight.shadow.camera.far = 10000;
-  // sunLight.shadow.camera.left = -10000;
-  // sunLight.shadow.camera.right = 10000;
-  // sunLight.shadow.camera.top = 300;
-  // sunLight.shadow.camera.bottom = -300;
+  sun_light.shadow.mapSize.width = 2048 * 64;
+  sun_light.shadow.mapSize.height = 2048 * 64;
+  sun_light.shadow.camera.near = 0.5;
+  sun_light.shadow.camera.far = 500;
 
-  // sunLight.shadow.camera.left = -1;
-  // sunLight.shadow.camera.right = 1;
-  // sunLight.shadow.camera.top = 1;
-  // sunLight.shadow.camera.bottom = -1;
-  // sunLight.shadow.camera.near = 0.5;
-  // sunLight.shadow.camera.far = 50;
+  sun_light.shadow.camera.left = -25;
+  sun_light.shadow.camera.right = 25;
+  sun_light.shadow.camera.top = 25;
+  sun_light.shadow.camera.bottom = -25;
 
-  scene.add(sunLight);
+  // sun_light.shadow.camera.left = -1;
+  // sun_light.shadow.camera.right = 1;
+  // sun_light.shadow.camera.top = 1;
+  // sun_light.shadow.camera.bottom = -1;
+  // sun_light.shadow.camera.near = 0.5;
+  // sun_light.shadow.camera.far = 50;
+  sun_light.shadow.camera.updateProjectionMatrix()
+
+  sun_light_target = new THREE.Object3D();
+  sun_light_target.position.set(0, 0, 0);
+  scene.add(sun_light_target);
+  sun_light.target = sun_light_target
+
+  scene.add(sun_light);
+  // const helper = new THREE.DirectionalLightHelper(sun_light, 5);
+  // scene.add(helper);
+}
+function add_sun_lm(pos) {
+  sun_light = new THREE.DirectionalLight(0xffffff, 0.75); // Warm sun color
+  sun_light.position.set(pos.x, 20, pos.z); // Position in the sky
+  sun_light.castShadow = true; // Enable shadows
+
+  // Optional: Adjust shadow settings for better quality
+  sun_light.shadow.mapSize.width = 512 * 4;
+  sun_light.shadow.mapSize.height = 512 * 4;
+  sun_light.shadow.camera.near = 0.5;
+  sun_light.shadow.camera.far = 500;
+
+  // sun_light.shadow.camera.left = -5;
+  // sun_light.shadow.camera.right = 5;
+  // sun_light.shadow.camera.top = 300;
+  // sun_light.shadow.camera.bottom = -300;
+
+  // sun_light.shadow.camera.left = -1;
+  // sun_light.shadow.camera.right = 1;
+  // sun_light.shadow.camera.top = 1;
+  // sun_light.shadow.camera.bottom = -1;
+  // sun_light.shadow.camera.near = 0.5;
+  // sun_light.shadow.camera.far = 50;
+  sun_light.shadow.camera.updateProjectionMatrix()
+
+  scene.add(sun_light);
+  const helper = new THREE.DirectionalLightHelper(sun_light, 5);
+  scene.add(helper);
 }
 
 
@@ -803,48 +925,16 @@ function init_scene() {
   listener = new THREE.AudioListener();
   camera.add(listener);
 
-  // Load and play background music
-  sound = new THREE.Audio(listener);
-  const audioLoader = new THREE.AudioLoader();
-  audioLoader.load('./audio/liminal-ambient.wav', function (buffer) {
-    sound.setBuffer(buffer);
-    sound.setLoop(true);
-    sound.setVolume(0.095); // Adjust volume
-    sound.play();
-    console.log("audio loaded");
-  });
+
 }
 
-// // Pause/Resume audio when tab loses/gains focus
-// document.addEventListener("visibilitychange", function () {
-//   if (document.visibilityState === "hidden") {
-//     sound.pause(); // Pause when tab is not in focus
-//   } else {
-//     sound.play(); // Resume when tab is in focus
-//   }
-// });
-
-// Function to pause/resume audio
-function handleAudio() {
-  if (document.hidden || !document.hasFocus()) {
-    sound.pause(); // Pause when tab is hidden or user switches apps
-  } else {
-    sound.play(); // Resume when user returns
-  }
+function init_audio() {
+  console.log("init audio");
+  sound = new AudioComponent(listener, game_loaded);
+  sound.init();
 }
 
-// Detect when user switches tabs
-document.addEventListener("visibilitychange", handleAudio);
 
-// Detect when user switches to another app
-window.addEventListener("blur", handleAudio);
-window.addEventListener("focus", handleAudio);
-
-document.querySelector("#volume-slider").addEventListener("input", function (event) {
-  const volume = event.target.value;
-  sound.setVolume(volume / 100);
-  // console.log("Volume set to: " + volume);
-});
 
 
 
@@ -885,12 +975,13 @@ function init_world_landmarks() {
     const placement = get_mesh_placement(landmark.position.x, landmark.position.z);
     landmark.position.y = placement.y;
     landmark.rotation.y = Math.PI;
+
     // landmark.quaternion.copy(placement.quat);
     scene.add(landmark);
     obj.mesh = landmark;
   }
-  init_quests(landmarks)
   window.landmarks = landmarks
+  init_quests(landmarks)
 }
 
 
@@ -912,19 +1003,52 @@ function init_first_person_controls() {
   controls.addEventListener('lock', function () {
     instructions.style.display = 'none';
     blocker.style.display = 'none';
+
+    // setTimeout(() => {
+    //   sound.play();
+    //   sound_paused = false
+    // }, 200);
+
+    sound.play();
+
   });
 
   controls.addEventListener('unlock', function () {
     blocker.style.display = 'flex';
     instructions.style.display = '';
+    // setTimeout(() => {
+    //   sound.pause();
+    //   sound_paused = true
+    // }, 200);
+
+    sound.pause();
+
   });
 
+  let previous_cluster = ""
   const onKeyDown = function (event) {
     const meshes_to_load = get_closest_meshes(NUM_OF_MESHES_TO_LOAD);
-    // const meshes_to_load = get_meshes_within_radius(RADIUS);
     basic_texture_load(meshes_to_load);
     unload_meshes();
-    player.check_location()
+    player.check_location(camera)
+
+    for (let i = 0; i < landmarks.length; i++) {
+      const landmark = landmarks[i]
+      const lm_pos = new THREE.Vector2(landmark.x * spacing, landmark.y * spacing);
+      const camera_pos = new THREE.Vector2(camera.position.x, camera.position.z)
+      const dist = camera_pos.distanceTo(lm_pos);
+      // console.log(dist);
+      if (dist < 50) {
+
+        let current_cluster = "Archive Cluster: " + i
+        if (previous_cluster !== current_cluster) {
+          console.log("🛩️ " + current_cluster);
+          banner_manager.set_banner(current_cluster)
+          previous_cluster = current_cluster;
+        }
+      }
+
+    }
 
     switch (event.code) {
       case 'ArrowUp':
@@ -1085,7 +1209,7 @@ function show_dither() {
         Y: ${pos_y} <br>
         in the Dither Archive.
         `;
-        direction.style.cursor = "progress";
+          direction.style.cursor = "progress";
           direction.innerHTML = look_for;
           text_container.appendChild(direction);
           direction.addEventListener('click', () => {
@@ -1160,6 +1284,9 @@ function check_object_in_crosshair() {
     // change crosshair color
     if (dist < 5 && (target_mesh.name === "Cube" || target_mesh.name === "dither")) {
       crosshair.style.backgroundColor = '#3f3';
+      // if(target_mesh.name === "dither"){
+      //   console.log(target_mesh);
+      // }
     } else {
       crosshair.style.backgroundColor = '#f33';
     }
@@ -1209,6 +1336,8 @@ function check_object_in_crosshair() {
   // if (intersects.length > 0) {
   //   const target_mesh = intersects[0].object;
   // }
+
+  // DEPRECATED
   function check_mesh(target_mesh) {
     let camera_pos = new THREE.Vector2(camera.position.x, camera.position.z);
     let mesh_pos = new THREE.Vector2(target_mesh.position.x, target_mesh.position.z);
@@ -1318,29 +1447,29 @@ function build_terrain() {
   for (let i = 0; i < vertices.length; i += 3) {
     const x = vertices[i] * scale;
     const z = vertices[i + 2] * scale;
-    const height = -6 + noise.noise(x, z, 0) * heightMultiplier;
-    vertices[i + 1] = height;
-    // vertices[i + 1] = 0;
+    const height = 0 + noise.noise(x, z, 0) * heightMultiplier;
+    // vertices[i + 1] = height;
+    vertices[i + 1] = 0;
   }
   geometry.computeVertexNormals(); // Improve shading
 
-  // Apply Material (with Texture)
-  const textureLoader = new THREE.TextureLoader();
-  const terrain_texture = textureLoader.load("textures/grasslight-big.jpg");
-  terrain_texture.wrapS = THREE.RepeatWrapping;
-  terrain_texture.wrapT = THREE.RepeatWrapping;
-  terrain_texture.repeat.set(50, 50);
-  let terrainMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-    // roughness: 0.9,
-    // metalness: 0.1,
-    map: terrain_texture, // Replace with your texture
-    // displacementMap: textureLoader.load("textures/grasslight-big-nm.jpg"),
-    // displacementScale: 20,
-    wireframe: false, // Set to true to see the wireframe
-  });
+  // // Apply Material (with Texture)
+  // const textureLoader = new THREE.TextureLoader();
+  // const terrain_texture = textureLoader.load("textures/grasslight-big.jpg");
+  // terrain_texture.wrapS = THREE.RepeatWrapping;
+  // terrain_texture.wrapT = THREE.RepeatWrapping;
+  // terrain_texture.repeat.set(50, 50);
+  // let terrainMaterial = new THREE.MeshStandardMaterial({
+  //   color: 0xffffff,
+  //   // roughness: 0.9,
+  //   // metalness: 0.1,
+  //   map: terrain_texture, // Replace with your texture
+  //   // displacementMap: textureLoader.load("textures/grasslight-big-nm.jpg"),
+  //   // displacementScale: 20,
+  //   wireframe: false, // Set to true to see the wireframe
+  // });
 
-  terrainMaterial = new THREE.MeshStandardMaterial({
+  let terrainMaterial = new THREE.MeshStandardMaterial({
     color: 0xffffff,
     metalness: 0,
     roughness: 1,
@@ -1352,6 +1481,15 @@ function build_terrain() {
   terrain.receiveShadow = true;
   terrain.castShadow = true;
   scene.add(terrain);
+
+  // const terrainMaterial2 = new THREE.MeshStandardMaterial({
+  //   color: 0x000000,
+  //   wireframe: true
+  // })
+  // const terrain2 = new THREE.Mesh(geometry, terrainMaterial2)
+  // terrain2.position.y += 0.00025;
+  // scene.add(terrain2)
+
 }
 
 function make_terrain() {
@@ -1584,6 +1722,7 @@ function ___QUESTS_STUFF() { }
 
 function ___NPC_STUFF() { }
 
+// DEPRECATED
 function init_npcs(x, y) {
   const closest = get_closest_meshes(1)[0]
   const placement = get_mesh_placement(x, y);
@@ -1601,7 +1740,7 @@ function init_npc(x, y) {
   const placement = get_mesh_placement(pos_x, pos_y);
   const pos = new THREE.Vector3(pos_x, placement.y, pos_y);
   const quat = placement.quat;
-  const fbx_path = 'js/3d/fbx/Idle2.fbx';
+  const fbx_path = 'js/3d/fbx/npc/Idle.fbx';
   return { scene, fbx_path, texture_path, pos, quat }
 }
 
@@ -1667,7 +1806,7 @@ function init_quests(landmarks) {
     }, 'pray'),
     npc2: new NPC(init_npc(landmarks[1].x, landmarks[1].y), "npc2", {
       name: "The Somber Archivist",
-      voice: "Tessa",
+      voice: "Fiona",
       dialogues: {
         quest2: {
           part1: [
@@ -1724,10 +1863,10 @@ function init_quests(landmarks) {
       onDialogueExhausted: (npcId, questId) => {
         questManager.updateQuest(questId, "talk", npcId);
       }
-    }, 'lay'),
+    }, 'look'),
     npc3: new NPC(init_npc(landmarks[2].x, landmarks[2].y), "npc3", {
       name: "The Cheerful Survivor",
-      voice: "Fiona",
+      voice: "Tessa",
       dialogues: {
         quest2: {
           part1: [
@@ -1776,10 +1915,10 @@ function init_quests(landmarks) {
       onDialogueExhausted: (npcId, questId) => {
         questManager.updateQuest(questId, "talk", npcId);
       }
-    }, 'sad'),
+    }, 'mutant'),
     npc4: new NPC(init_npc(landmarks[3].x, landmarks[3].y), "npc4", {
       name: "The Agitated Heretic",
-      voice: "Bad News",
+      voice: "Grandma",
       dialogues: {
         quest2: {
           part1: [
@@ -1973,7 +2112,7 @@ function init_quests(landmarks) {
       onDialogueExhausted: (npcId, questId) => {
         questManager.updateQuest(questId, "talk", npcId);
       }
-    }, 'crouch')
+    }, 'hold')
   };
 
   Object.keys(npcs).forEach(key => {
@@ -1984,14 +2123,19 @@ function init_quests(landmarks) {
 
   // Check loading status periodically
   const checkLoadedInterval = setInterval(() => {
-    if (areAllNPCsLoaded()) {
+    if (are_all_npcs_loaded()) {
       console.log("✅ All NPCs are loaded!");
       clearInterval(checkLoadedInterval); // Stop checking once they are loaded
+      // PROGRESS LOADING!!
+
+      // Progress Loading
+      const npcs_info = document.querySelector("#npcs-info")
+      npcs_info.innerHTML = ''
+      npcs_info.textContent = "Loaded"
+      game_loaded.npcs = true;
       npcs_loaded = true
       player = new Player('~~~~')
-      questManager = new QuestManager(npcs, player)
-      // player.show_debug(scene)
-      // questManager.activateQuest("quest1", "npc1")
+      questManager = new QuestManager(npcs, player, banner_manager)
     } else {
       console.log("⏳ Waiting for NPCs to load...");
     }
@@ -1999,11 +2143,8 @@ function init_quests(landmarks) {
 
 }
 
-function areAllNPCsLoaded() {
+function are_all_npcs_loaded() {
   return Object.keys(npcs).length > 0 && Object.values(npcs).every(npc => {
-    // const npc = npcs[key]
-    // console.log(npc.loaded);
-    // console.log(ke);
     return npc.loaded === true
   });
 }
@@ -2030,80 +2171,169 @@ function remove_npcs_dialogues() {
 
 
 
-class Player {
-  // he also requires some quest like things
-  constructor(name) {
-    this.name = name;
-    this.currentQuest = "quest1"; // Starts with quest 1\
-    this.locations = {
-      quest1: { pos: new THREE.Vector2(10, 10), name: "first dither" },
-      quest3: { pos: new THREE.Vector2(10, -10), name: "second dither" },
-      quest4: { pos: new THREE.Vector2(-10, 10), name: "third dither" },
-    };
-    this.onLocationReached = (location, questId) => {
-      // this should be formulated as method like progress_quest with the task manager
-      // const next_objective = questManager.get_next_objective(questId)
-      // console.log(next_objective);
-      // if (next_objective.type === "talk") {
-      //   // console.log(npcs[next_objective.value]);
-      //   const npc = npcs[next_objective.value];
-      //   const part = next_objective.diag
-      //   npc.set_dialogue_part(part)
-      // }
-      questManager.updateQuest(questId, "go_to", location);
+
+
+
+
+class EyeMaster {
+  constructor(scene) {
+    this.scene = scene;
+    this.left_eye = null;
+    this.right_eye = null;
+    this.group = null;
+    this.space = 1.5;
+    this.scale = 0.25;
+    this.height = 18;
+    this.distance = 23;
+    this.loaded = false;
+    const plane = new THREE.BoxGeometry(this.space * 2, this.scale, 20);
+    const mat = new THREE.MeshStandardMaterial({ color: 0x000000 })
+    this.debug = new THREE.Mesh(plane, mat);
+    this.debug.position.set(0, this.height, 0)
+    this.noise = new ImprovedNoise();
+    this.inc = 0;
+    this.step = Math.PI * 0.001;
+    this.load_eyes()
+  }
+  load_eyes() {
+    const loader = new FBXLoader();
+
+    const eye = '14'
+    loader.load('js/3d/fbx/eye/Marmoset_Scene/Assets/Meshes/Refr_Hi.fbx', (object) => {
+      this.left_eye = object;
+      // const skeleton_utils = new SkeletonUtils()
+      this.right_eye = SkeletonUtils.clone(this.left_eye);
+      // const scale = 0.0075;
+      const scale = 8;
+      const tex_scale = 1;
+      this.left_eye.scale.set(this.scale, this.scale, this.scale);
+      this.right_eye.scale.set(this.scale, this.scale, this.scale);
+      this.left_eye.updateMatrixWorld(true);
+      this.right_eye.updateMatrixWorld(true);
+      this.load_texture(this.left_eye, '14', 1)
+      this.load_texture(this.right_eye, '09', 1)
+      // this.add_texture(this.texture_path);
+      // this.set_pos(this.pos);
+      const h = 150
+      this.left_eye.position.x = this.space
+      this.left_eye.position.y = this.height
+      this.right_eye.position.x = -this.space
+      this.right_eye.position.y = this.height
+      this.group = new THREE.Group()
+      this.group.add(this.left_eye)
+      this.group.add(this.right_eye)
+      this.scene.add(this.group);
+      this.loaded = true
+    }, undefined, (error) => {
+      console.error('An error happened while loading the FBX model:', error);
+    });
+  }
+
+  load_texture(model, eye, tex_scale) {
+    const texture_loader = new THREE.TextureLoader()
+    model.traverse(child => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        child.material.dispose()
+        child.material = new THREE.MeshStandardMaterial({
+          map: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_basecolor.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          emissiveMap: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_emissive.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          normalMap: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_normal.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          aoMap: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_ambientocclusion.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          bumpMap: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_height.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          metalnessMap: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_metallic.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          roughnessMap: texture_loader.load('js/3d/fbx/eye/Maps_Other/Cr_' + eye + '/Eye_' + eye + '_roughness.png', texture => texture.repeat.set(tex_scale, tex_scale)),
+          fog: true
+        })
+      }
+    })
+  }
+
+  look_at(camera) {
+
+    const p = camera.position
+    // const left = new THREE.Vector3(p.x + eye_master.space, p.y, p.z)
+    // const right = new THREE.Vector3(p.x - 20, p.y, p.z)
+    // eye_master.left_eye.lookAt(left)
+    // eye_master.right_eye.lookAt(right)
+    this.group.lookAt(p)
+    const dummy = new THREE.Object3D();
+    const time = performance.now() * 0.0001;
+
+    const nx = this.noise.noise(time * 5, 0, 0);
+    const ny = this.noise.noise(0, time * 5, 0);
+    let noiseX = Math.sin(time) * (7 * nx); // 5 units side-to-side
+    let noiseY = Math.sin(time * 1.3) * (4 * ny); // slight vertical wiggle
+    // noiseX += noise.noise(time * 0.25 * 10, 0, 0) * 5;
+    // noiseY += noise.noise(0, time * 0.25 * 10, 0) * 2;
+
+    [this.left_eye, this.right_eye].forEach((eye, i) => {
+      const worldPos = new THREE.Vector3();
+      eye.getWorldPosition(worldPos);
+
+
+      const noisyTarget = p.clone();
+      noisyTarget.x += noiseX;
+      noisyTarget.y += noiseY;
+
+      dummy.position.copy(worldPos);
+      // dummy.lookAt(p);
+      dummy.lookAt(noisyTarget);
+      const worldQuat = dummy.quaternion.clone();
+      const parentQuat = eye.parent.getWorldQuaternion(new THREE.Quaternion()).invert();
+      const localQuat = worldQuat.premultiply(parentQuat);
+
+      // Apply full localQuat temporarily
+      eye.quaternion.copy(localQuat);
+
+      // Convert to Euler to isolate x-axis
+      const euler = new THREE.Euler().setFromQuaternion(eye.quaternion, 'XYZ');
+      eye.rotation.set(euler.x, euler.y, 0); // Only allow x-axis rotation
+    });
+  }
+
+  set_position(camera) {
+    // Direction the target is facing
+    const target = new THREE.Object3D()
+    target.position.copy(camera.position);
+    const targetDir = new THREE.Vector3();
+    target.getWorldDirection(targetDir);
+
+    // Calculate position behind target
+    const time = performance.now() * 0.0001;
+    const offset = targetDir.clone().multiplyScalar(this.distance);
+    const ny = this.noise.noise(0, time * 5, 0) * Math.PI * 0.1;
+    const y = Math.sin(this.inc + ny) * 0.25
+    offset.y += (this.height + y); // apply height
+
+    const desiredPosition = target.position.clone().add(offset);
+    // this.group.position.copy(desiredPosition);
+    // this.group.position.y = offset.y;
+
+
+    const targetPos = target.position.clone();
+    const center = new THREE.Vector3(0, 0, 0);
+    const maxDistance = this.distance;
+
+    // Vector from target to center
+    const direction = center.clone().sub(targetPos);
+    const distanceToCenter = direction.length();
+    direction.normalize();
+
+    // Use min to prevent overshooting the center
+    const eyeOffset = Math.min(maxDistance, distanceToCenter * 0.999); // slightly less to avoid precision issues
+    const eyePos = targetPos.clone().add(direction.multiplyScalar(eyeOffset));
+    eyePos.y += (this.height);
+    eyePos.x += (y);
+
+    this.group.position.copy(eyePos);
+
+    this.inc += this.step;
+    if (this.inc >= Math.PI * 2) {
+      this.inc = 0;
     }
-    this.geom = new THREE.BoxGeometry(0.5, 300, 0.5);
-    this.mat = new THREE.MeshBasicMaterial();
-    this.mesh = new THREE.Mesh(this.geom, this.mat)
-    this.mesh.position.x = this.locations[this.currentQuest].pos.x
-    this.mesh.position.z = this.locations[this.currentQuest].pos.y
-
   }
-
-  show_debug(scene) {
-    scene.add(this.mesh)
-  }
-
-  set_current_quest(questId) {
-    this.currentQuest = questId
-  }
-
-  update_debug_position() {
-    this.mesh.position.x = this.locations[this.currentQuest].pos.x
-    this.mesh.position.z = this.locations[this.currentQuest].pos.y
-  }
-
-  talkTo(npc) {
-    if (npc) {
-      console.log(`talking to npc: ${npc.name}`);
-      npc.talk(this.currentQuest);
-    }
-  }
-
-  updateQuestProgress(questId) {
-    // Check if any new quests have started
-    this.currentQuest = questId; // Set active quest
-    if (!this.locations[this.currentQuest]) return
-    this.update_debug_position()
-    // console.log(questManager.activeQuests);
-    // questManager.activeQuests.forEach(questId => {
-    //   // console.log(object);
-    // });
-  }
-
-  check_location() {
-    if (!this.locations[this.currentQuest]) return
-    const pos = this.locations[this.currentQuest].pos;
-    // console.log(pos);
-    const player_pos = new THREE.Vector2(camera.position.x, camera.position.z);
-    const dist = player_pos.distanceTo(pos);
-    // console.log(dist);
-    if (dist < 3) {
-      console.log('location reached');
-      this.onLocationReached(this.locations[this.currentQuest].name, this.currentQuest)
-    }
-  }
-
 
 }
 
